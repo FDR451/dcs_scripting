@@ -1,6 +1,10 @@
 --[[
     simpleEwr v0.0.1 Lightweight simple EWR script
 
+    todo:
+        eventhandler to remove destroyed targets from the knownTargets table
+        autmatic clean up of targets that have not been seen for x minutes, not sure if it is either worth it or useful
+
 ]]
 
 simpleEwr = {}
@@ -14,7 +18,9 @@ simpleEwr.debug = true
 --general functions, those should really be it's own file
 
 function simpleEwr.notify(message) --used this so often now... 
-    trigger.action.outText(tostring(message), 5)
+    if simpleEwr.debug == true then
+        trigger.action.outText(tostring(message), 5)
+    end
 end
 
 function simpleEwr.smokeVec3 (vec3) --puts smoke at vec3 for debugging
@@ -27,6 +33,12 @@ function simpleEwr.printVec3 (vec3)
 end
 
 --main functions
+
+function simpleEwr.start() --starts simpleEWR
+end
+
+function simpleEwr.stop()
+end
 
 function simpleEwr.addEwrByPrefix (prefix) --later, look at skynet how it is done
 end
@@ -60,7 +72,7 @@ function simpleEwr.ewrDetectTargets () --iterates through the table of EWRs and 
         if _targets then
             for i = 1, #_targets do
 
-                if _targets[i].object then
+                if _targets[i].object and _targets[i].distance == true then
 
                     local _object = _targets[i].object
 
@@ -72,6 +84,7 @@ function simpleEwr.ewrDetectTargets () --iterates through the table of EWRs and 
                             unitPosVec3 = _object:getPoint(),
                             unitVelVec3 = _object:getVelocity(),
                             detectionTime = timer.getTime(),
+                            inZone = simpleEwr.isVecInZone(_object:getPoint()),
 
                             --probalby not saved here, no reason to run the calculation every time a target is detected. Just run it once it is needed for the intercept based on the last known position and heading
                             unitSpeed = mist.vec.mag(_object:getVelocity()), --speed in m/s
@@ -88,18 +101,23 @@ end
 
 function simpleEwr.decider() --checks if a detected target is inside of the detection zone
     for index, vTargetTable in pairs (simpleEwr.knownTargets) do
-        if vTargetTable.unitPosVec3 and simpleEwr.isVecInZone(vTargetTable.unitPosVec3) then
+        --if vTargetTable.unitPosVec3 and simpleEwr.isVecInZone(vTargetTable.unitPosVec3) then
+        if vTargetTable.inZone == true then
+
+            --vTargetTable.inZone = true
+
             simpleEwr.notify("positive detection!")
             simpleEwr.applyFlag()
            
         else
+            --vTargetTable.inZone = false
             simpleEwr.notify("negative detection!")
         end
     end
 end
 
 function simpleEwr.isVecInZone(vec3) --returns true if a vec3 is in the detection zone
-    if simpleEwr.detectionZone ~= false then
+    if simpleEwr.detectionZone ~= false then --zone exists / has been defined
         if mist.pointInPolygon(vec3 ,  simpleEwr.detectionZone) then
             simpleEwr.notify("in zone")
             return true
