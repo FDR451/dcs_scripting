@@ -1,10 +1,16 @@
 simpleMisc = {}
-simpleMisc.debug = true
+debug = true
 
-function simpleMisc.notify(message) --used this so often now... 
-    if simpleMisc.debug == true then
+function simpleMisc.notify(message, duration) --used this so often now... 
+    trigger.action.outText(tostring(message), duration)
+    env.error("Notify: " .. tostring(message), false)
+end
+
+function simpleMisc.debug(message)
+    if debug == true then
         trigger.action.outText(tostring(message), 5)
     end
+    env.error("Debug: " .. tostring(message), false)
 end
 
 function simpleMisc.smokeVec3 (vec3) --puts smoke at vec3 for debugging

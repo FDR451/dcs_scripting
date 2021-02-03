@@ -28,8 +28,8 @@ end
 function simpleEwr.addEwrByName (unitName) --adds an EWR to the ewrUnitList by it's unit name
 end
 
-function simpleEwr.addEwrByTable (table) --adds EWRs as a table ie: table = {"EWR-1", "EWR-2", "EWR-n"}
-    simpleEwr.ewrUnitList = table
+function simpleEwr.addEwrByTable (unitNameTable) --adds EWRs as a table ie: table = {"EWR-1", "EWR-2", "EWR-n"}
+    simpleEwr.ewrUnitList = unitNameTable
 end
 
 function simpleEwr.setUpdateInterval (seconds) --sets the interval for the repeated detection check
@@ -88,12 +88,12 @@ function simpleEwr.decider() --checks if a detected target is inside of the dete
 
             --vTargetTable.inZone = true
 
-            simpleMisc.notify("positive detection!")
+            simpleMisc.debug("positive detection!")
             simpleEwr.applyFlag()
            
         else
             --vTargetTable.inZone = false
-            simpleMisc.notify("negative detection!")
+            simpleMisc.debug("negative detection!")
         end
     end
 end
@@ -101,14 +101,14 @@ end
 function simpleEwr.isVecInZone(vec3) --returns true if a vec3 is in the detection zone
     if simpleEwr.detectionZone ~= false then --zone exists / has been defined
         if mist.pointInPolygon(vec3 ,  simpleEwr.detectionZone) then
-            simpleMisc.notify("in zone")
+            simpleMisc.debug("in zone")
             return true
         else
-            simpleMisc.notify("not in zone")
+            simpleMisc.debug("not in zone")
             return false
         end
     else
-        simpleMisc.notify("no zone defined")
+        simpleMisc.debug("no zone defined")
         return true --no idea, but it feels better than false...
     end
 end
@@ -120,11 +120,11 @@ function simpleEwr.applyFlag () --sets the flag to be used with the mission edit
 end
 
 function simpleEwr.readKnownTargets() --debugging...
-    simpleMisc.notify("_____________known targets____________")
+    simpleMisc.debug("_____________known targets____________")
     for k, v in pairs (simpleEwr.knownTargets) do
-        simpleMisc.notify("k: " .. tostring(k) .. " v: " .. tostring(v))
+        simpleMisc.debug("k: " .. tostring(k) .. " v: " .. tostring(v))
         for k2, v2 in pairs (v) do
-            simpleMisc.notify("____k2: " .. tostring(k2) .. " v2: " .. tostring(v2))
+            simpleMisc.debug("____k2: " .. tostring(k2) .. " v2: " .. tostring(v2))
         end
     end
 end
@@ -132,31 +132,31 @@ end
 function simpleEwr.getEwrDebugTargets () --purely for debugging
     for k, vUnit in pairs (simpleEwr.ewrUnitList) do
 
-        simpleMisc.notify("k: " .. k .. "; vUnit: " .. vUnit)
+        simpleMisc.debug("k: " .. k .. "; vUnit: " .. vUnit)
 
         local _targets = Unit.getByName(vUnit):getController():getDetectedTargets(Controller.Detection.Radar)
 
         if _targets then
             for k2, v2 in pairs (_targets) do
-                simpleMisc.notify("____k2: " .. tostring(k2) .. "; v2: " .. tostring(v2) )
+                simpleMisc.debug("____k2: " .. tostring(k2) .. "; v2: " .. tostring(v2) )
                 for k3, v3 in pairs (v2) do
-                    simpleMisc.notify ("________k3: " .. tostring(k3) .. "; v3: " .. tostring(v3) )
+                    simpleMisc.debug ("________k3: " .. tostring(k3) .. "; v3: " .. tostring(v3) )
 
                     if type(v3) == "table" then 
                         for k4, v4 in pairs (v3) do
-                            simpleMisc.notify ("____________k4: " .. tostring(k4) .. "; v4: " .. tostring(v4) )
+                            simpleMisc.debug ("____________k4: " .. tostring(k4) .. "; v4: " .. tostring(v4) )
 
                             local _id = v3.id_
                             local _obj = v3
-                            simpleMisc.notify ("ID: " .. _id)
+                            simpleMisc.debug ("ID: " .. _id)
                             local _name = _obj:getName()
                             local _unit = Unit.getByName(_name)
                             local _point = _unit:getPoint()
-                            simpleMisc.notify("vec3.x: " .. _point.x .. " vec3.y: " .. _point.y) 
-                            simpleMisc.notify ("name: " .. _name)
+                            simpleMisc.debug("vec3.x: " .. _point.x .. " vec3.y: " .. _point.y) 
+                            simpleMisc.debug ("name: " .. _name)
 
                             --local _name = simpleEwr.getUnitNameById(_id)
-                            --simpleMisc.notify("Name: " .. _name)
+                            --simpleMisc.debug("Name: " .. _name)
 
                         end
                     end
@@ -167,14 +167,14 @@ function simpleEwr.getEwrDebugTargets () --purely for debugging
 end
 
 function simpleEwr.repeater ()
-    simpleMisc.notify ("tick")
+    simpleMisc.debug ("tick")
 
     simpleEwr.ewrDetectTargets()
     simpleEwr.decider()
 
     --simpleEwr.readKnownTargets()
 
-    simpleMisc.notify ("tock")
+    simpleMisc.debug ("tock")
 end
 
 do  
@@ -185,5 +185,5 @@ do
     simpleEwr.setDetectionZone("poly")
     simpleEwr.setDetectionFlag(42)
 
-    simpleMisc.notify("simpleEwr finished loading")
+    simpleMisc.notify("simpleEwr finished loading", 15)
 end

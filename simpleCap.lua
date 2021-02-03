@@ -92,5 +92,5 @@ local groupData = {
 	simpleCap.spawn()
 
 	  
-	simpleMisc.notify("simpleCap finished loading")
+	simpleMisc.notify("simpleCap finished loading", 15)
   end

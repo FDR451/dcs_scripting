@@ -1,1 +1,0 @@
---use simpleEwr to let AAA know (knowTarget()) about targets, useful for AAA at night

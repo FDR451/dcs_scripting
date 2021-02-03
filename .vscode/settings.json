@@ -1,12 +1,5 @@
 {
-    "Lua.diagnostics.globals": [
-        "mist",
-        "trigger",
-        "Unit",
-        "Controller",
-        "timer"
-    ],
     "Lua.diagnostics.disable": [
-        "lowercase-global"
+        "lowercase-global",
     ]
 }
