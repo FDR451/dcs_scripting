@@ -12,7 +12,9 @@ simpleEwr.ewrUnitList = {} --{"EWR-1", "EWR-2"}
 simpleEwr.knownTargets = {} --table of known targets
 simpleEwr.clockTiming = 6 --tiem between checks, lower interval higher workload
 simpleEwr.detectionZone = false --false until set
-simpleEwr.detectionFlag = false --false until set
+
+simpleEwr.flagNumber = false --false until set
+simpleEwr.flagCounter = 0 -- do not change
 
 --setup functions
 
@@ -25,9 +27,9 @@ end
 function simpleEwr.addEwrByName (unitName) --main function for adding units to the table
     if Unit.getByName(unitName) then --existing unit
         table.insert(simpleEwr.ewrUnitList, unitName)
-        simpleMisc.debugOutput("addEwrByName: Added " .. unitName .. " to ewrUnitList. New ewrUnitList lenght is " .. #simpleEwr.ewrUnitList)
+        simple.debugOutput("addEwrByName: Added " .. unitName .. " to ewrUnitList. New ewrUnitList lenght is " .. #simpleEwr.ewrUnitList)
     else --unit does not exist
-        simpleMisc.errorOutput("addEwrByName: Tried to add a unit to simpleEwr that does not exist. unitName: " .. unitName .. " has not been added to the table!")
+        simple.errorOutput("addEwrByName: Tried to add a unit to simpleEwr that does not exist. unitName: " .. unitName .. " has not been added to the table!")
     end
 end
 
@@ -53,11 +55,15 @@ function simpleEwr.setUpdateInterval (seconds) --sets the interval for the repea
 end
 
 function simpleEwr.setDetectionFlag (flagNumber) --sets the flag that should be used after a detection event
-    simpleEwr.detectionFlag = flagNumber
+    simpleEwr.flagNumber = flagNumber
 end
 
 function simpleEwr.setDetectionZone (groupName)
-    simpleEwr.detectionZone = mist.getGroupPoints(groupName)
+    if Group.getByName(groupName) then
+        simpleEwr.detectionZone = mist.getGroupPoints(groupName)
+    else
+        simple.errorOutput("setDetectionZone: tried to add a zone that is not a group in the ME. groupName: " .. groupName)
+    end
 end
 
 --logic functions
@@ -105,10 +111,10 @@ end
 function simpleEwr.decider() --checks if a detected target is inside of the detection zone
     for index, vTargetTable in pairs (simpleEwr.knownTargets) do
         if vTargetTable.inZone == true then
-            simpleMisc.debugOutput("decider: Found target in detectionZone, setting flag " .. simpleEwr.detectionFlag .. " to TRUE")
+            simple.debugOutput("decider: Found target in detectionZone, setting flag " .. simpleEwr.flagNumber .. " increased by 1.")
             simpleEwr.applyFlag()
         else
-            simpleMisc.debugOutput("decider: No target in detectionZone")
+            simple.debugOutput("decider: No target in detectionZone")
         end
     end
 end
@@ -116,41 +122,42 @@ end
 function simpleEwr.isVecInZone(vec3) --returns true if a vec3 is in the detection zone
     if simpleEwr.detectionZone ~= false then --zone exists / has been defined
         if mist.pointInPolygon(vec3, simpleEwr.detectionZone) then
-            simpleMisc.debugOutput("isVecInZone: in detectionZone")
+            simple.debugOutput("isVecInZone: in detectionZone")
             return true
         else
-            simpleMisc.debugOutput("isVecInZone: NOT in detectionZone")
+            simple.debugOutput("isVecInZone: NOT in detectionZone")
             return false
         end
     else
-        simpleMisc.debugOutput("isVecInZone: no detectionZone defined")
+        simple.debugOutput("isVecInZone: no detectionZone defined")
         return true --true because every detection should matter
     end
 end
 
 function simpleEwr.applyFlag () --sets the flag to be used with the mission editor
-    if simpleEwr.detectionFlag ~= false then
-        trigger.action.setUserFlag(simpleEwr.detectionFlag, true )
+    if simpleEwr.flagNumber ~= false then
+        simpleEwr.flagCounter = simpleEwr.flagCounter + 1
+        trigger.action.setUserFlag(simpleEwr.flagNumber, simpleEwr.flagCounter )
     end
 end
 
 function simpleEwr.readKnownTargets() --debugging...
-    simpleMisc.debugOutput("_____________known targets____________")
+    simple.debugOutput("_____________known targets____________")
     for k, v in pairs (simpleEwr.knownTargets) do
-        simpleMisc.debugOutput("k: " .. tostring(k) .. " v: " .. tostring(v))
+        simple.debugOutput("k: " .. tostring(k) .. " v: " .. tostring(v))
         for k2, v2 in pairs (v) do
-            simpleMisc.debugOutput("____k2: " .. tostring(k2) .. " v2: " .. tostring(v2))
+            simple.debugOutput("____k2: " .. tostring(k2) .. " v2: " .. tostring(v2))
         end
     end
 end
 
 function simpleEwr.repeater ()
-    simpleMisc.debugOutput ("repeater: tick")
+    simple.debugOutput ("repeater: tick")
 
     simpleEwr.ewrDetectTargets()
     simpleEwr.decider()
 
-    simpleMisc.debugOutput ("repeater: tock")
+    simple.debugOutput ("repeater: tock")
 end
 
 function simpleEwr.eventHandler(event)
@@ -159,14 +166,14 @@ function simpleEwr.eventHandler(event)
         for number, ewrUnit in pairs (simpleEwr.ewrUnitList) do --checks if the dead unit is an EWR --works!
             if event.initiator:getName()  == ewrUnit then
                 table.remove(simpleEwr.ewrUnitList, number)
-                simpleMisc.debugOutput("eventHandler: EWR removed")
+                simple.debugOutput("eventHandler: EWR removed")
             end
         end
 
         for k, v in pairs (simpleEwr.knownTargets) do -- checks if it is a known target --does not work!
             if k == event.initiator.id_ then
                 simpleEwr.knownTargets[event.initiator.id_] = nil
-                simpleMisc.debugOutput("eventHandler: knownTarget removed. ID: " .. event.initiator.id_)
+                simple.debugOutput("eventHandler: knownTarget removed. ID: " .. event.initiator.id_)
             end
         end
     end
@@ -183,5 +190,5 @@ do
     simpleEwr.setDetectionZone("poly")
     simpleEwr.setDetectionFlag(42)
 
-    simpleMisc.notify("simpleEwr finished loading", 15) --keep at the end of the script
+    simple.notify("simpleEwr finished loading", 15) --keep at the end of the script
 end
