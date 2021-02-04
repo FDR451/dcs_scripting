@@ -3,7 +3,7 @@ simpleMisc.debug = true
 
 function simpleMisc.notify(message, duration) --used this so often now... 
     trigger.action.outText(tostring(message), duration)
-    env.info("Notify: " .. tostring(message), false)
+    --env.info("Notify: " .. tostring(message), false)
 end
 
 function simpleMisc.debugOutput(message)
@@ -11,7 +11,7 @@ function simpleMisc.debugOutput(message)
     if simpleMisc.debug == true then
         simpleMisc.notify(_outputString, 5)
     end
-    env.warning(_outputString, false)
+    env.info(_outputString, false)
 end
 
 function simpleMisc.errorOutput(message)

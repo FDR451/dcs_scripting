@@ -25,22 +25,20 @@ end
 function simpleEwr.addEwrByName (unitName) --main function for adding units to the table
     if Unit.getByName(unitName) then --existing unit
         table.insert(simpleEwr.ewrUnitList, unitName)
-        simpleMisc.debugOutput("Added " .. unitName .. " to ewrUnitList. New ewrUnitList lenght is " .. #simpleEwr.ewrUnitList)
+        simpleMisc.debugOutput("addEwrByName: Added " .. unitName .. " to ewrUnitList. New ewrUnitList lenght is " .. #simpleEwr.ewrUnitList)
     else --unit does not exist
-        simpleMisc.errorOutput("Tried to add a unit to simpleEwr that does not exist. unitName: " .. unitName .. " has not been added to the table!")
+        simpleMisc.errorOutput("addEwrByName: Tried to add a unit to simpleEwr that does not exist. unitName: " .. unitName .. " has not been added to the table!")
     end
 end
 
 function simpleEwr.addEwrByPrefix (prefix) --works, needs a check if the unit is on position 1 of the group
-    for unitName, unit in pairs(mist.DBs.unitsByName) do
-
-        local _pos = string.find(unitName, prefix, 1, true)
-		--somehow the MIST unit db contains StaticObject, we check to see we only add Unit
-        
-		if _pos and _pos == 1 then --no idea, stolen from skynet
-			simpleEwr.addEwrByName(unitName)
+    for unitName, unitTable in pairs(mist.DBs.unitsByName) do
+        local _prefixPos = string.find(unitName, prefix, 1, true)
+        if _prefixPos and _prefixPos == 1 then
+            if Unit.getByName(unitName) and Unit.getByName(unitName):getNumber() == 1 then --check if unit exists and is the first one in the group
+                simpleEwr.addEwrByName(unitName)
+            end
 		end
-    
     end
 end
 
@@ -79,21 +77,24 @@ function simpleEwr.ewrDetectTargets () --iterates through the table of EWRs and 
                     local _object = _targets[i].object
 
                     if _object:getCoalition() == 2 then
+                        if Unit.getByName(_object:getName()) then --check if object is a unit
 
-                        local args = {
-                            objectId = _object.id_,
-                            unitName = _object:getName(),
-                            unitPosVec3 = _object:getPoint(),
-                            unitVelVec3 = _object:getVelocity(),
-                            detectionTime = timer.getTime(),
-                            inZone = simpleEwr.isVecInZone(_object:getPoint()),
+                            local args = {
+                                objectId = _object.id_,
+                                unitName = _object:getName(),
+                                unitPosVec3 = _object:getPoint(),
+                                unitVelVec3 = _object:getVelocity(),
+                                detectionTime = timer.getTime(),
+                                inZone = simpleEwr.isVecInZone(_object:getPoint()),
+    
+                                --probalby not saved here, no reason to run the calculation every time a target is detected. Just run it once it is needed for the intercept based on the last known position and heading
+                                unitSpeed = mist.vec.mag(_object:getVelocity()), --speed in m/s
+                                unitHeading = math.atan2 (_object:getVelocity().x, _object:getVelocity().z), 
+                            }
+    
+                            simpleEwr.knownTargets[args.objectId] = args
 
-                            --probalby not saved here, no reason to run the calculation every time a target is detected. Just run it once it is needed for the intercept based on the last known position and heading
-                            unitSpeed = mist.vec.mag(_object:getVelocity()), --speed in m/s
-                            unitHeading = math.atan2 (_object:getVelocity().x, _object:getVelocity().z), 
-                        }
-
-                        simpleEwr.knownTargets[args.objectId] = args
+                        end
                     end
                 end
             end
@@ -104,10 +105,10 @@ end
 function simpleEwr.decider() --checks if a detected target is inside of the detection zone
     for index, vTargetTable in pairs (simpleEwr.knownTargets) do
         if vTargetTable.inZone == true then
-            simpleMisc.debugOutput("Decider: Found target in detectionZone, setting flag " .. simpleEwr.detectionFlag .. " to TRUE")
+            simpleMisc.debugOutput("decider: Found target in detectionZone, setting flag " .. simpleEwr.detectionFlag .. " to TRUE")
             simpleEwr.applyFlag()
         else
-            simpleMisc.debugOutput("Decider: No target in detectionZone")
+            simpleMisc.debugOutput("decider: No target in detectionZone")
         end
     end
 end
@@ -115,14 +116,14 @@ end
 function simpleEwr.isVecInZone(vec3) --returns true if a vec3 is in the detection zone
     if simpleEwr.detectionZone ~= false then --zone exists / has been defined
         if mist.pointInPolygon(vec3, simpleEwr.detectionZone) then
-            simpleMisc.debugOutput("TRUE: detected target is in detectionZone")
+            simpleMisc.debugOutput("isVecInZone: in detectionZone")
             return true
         else
-            simpleMisc.debugOutput("FALSE: detected target is NOT in detectionZone")
+            simpleMisc.debugOutput("isVecInZone: NOT in detectionZone")
             return false
         end
     else
-        simpleMisc.debugOutput("TRUE: no detectionZone defined")
+        simpleMisc.debugOutput("isVecInZone: no detectionZone defined")
         return true --true because every detection should matter
     end
 end
@@ -144,23 +145,43 @@ function simpleEwr.readKnownTargets() --debugging...
 end
 
 function simpleEwr.repeater ()
-    simpleMisc.debugOutput ("REPEATER: tick")
+    simpleMisc.debugOutput ("repeater: tick")
 
     simpleEwr.ewrDetectTargets()
     simpleEwr.decider()
 
-    simpleMisc.debugOutput ("REPEATER: tock")
+    simpleMisc.debugOutput ("repeater: tock")
+end
+
+function simpleEwr.eventHandler(event)
+    if event.id == 30 then --event dead 8, 30 unit lost
+
+        for number, ewrUnit in pairs (simpleEwr.ewrUnitList) do --checks if the dead unit is an EWR --works!
+            if event.initiator:getName()  == ewrUnit then
+                table.remove(simpleEwr.ewrUnitList, number)
+                simpleMisc.debugOutput("eventHandler: EWR removed")
+            end
+        end
+
+        for k, v in pairs (simpleEwr.knownTargets) do -- checks if it is a known target --does not work!
+            if k == event.initiator.id_ then
+                simpleEwr.knownTargets[event.initiator.id_] = nil
+                simpleMisc.debugOutput("eventHandler: knownTarget removed. ID: " .. event.initiator.id_)
+            end
+        end
+    end
 end
 
 do  
+    mist.addEventHandler(simpleEwr.eventHandler)
     local repeater = mist.scheduleFunction (simpleEwr.repeater, {}, timer.getTime() + 2, simpleEwr.clockTiming )
 
     --player input functions, should be set in ME or other file, but here for testing
-    simpleEwr.addEwrByName ("EWR-1")
-    simpleEwr.addEwrByTable ({"EWR-2", "EWR-3"})
-    --simpleEwr.addEwrByPrefix("EWR")
+    --simpleEwr.addEwrByName ("EWR-1")
+    --simpleEwr.addEwrByTable ({"EWR-2", "EWR-3"})
+    simpleEwr.addEwrByPrefix("EWR")
     simpleEwr.setDetectionZone("poly")
     simpleEwr.setDetectionFlag(42)
 
-    simpleMisc.notify("simpleEwr finished loading", 15)
+    simpleMisc.notify("simpleEwr finished loading", 15) --keep at the end of the script
 end
