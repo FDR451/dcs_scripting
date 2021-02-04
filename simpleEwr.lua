@@ -14,22 +14,40 @@ simpleEwr.clockTiming = 6 --tiem between checks, lower interval higher workload
 simpleEwr.detectionZone = false --false until set
 simpleEwr.detectionFlag = false --false until set
 
---main functions
+--setup functions
 
 function simpleEwr.start() --starts simpleEWR
 end
 
-function simpleEwr.stop()
+function simpleEwr.stop() --maybe?
 end
 
-function simpleEwr.addEwrByPrefix (prefix) --later, look at skynet how it is done
+function simpleEwr.addEwrByName (unitName) --main function for adding units to the table
+    if Unit.getByName(unitName) then --existing unit
+        table.insert(simpleEwr.ewrUnitList, unitName)
+        simpleMisc.debugOutput("Added " .. unitName .. " to ewrUnitList. New ewrUnitList lenght is " .. #simpleEwr.ewrUnitList)
+    else --unit does not exist
+        simpleMisc.errorOutput("Tried to add a unit to simpleEwr that does not exist. unitName: " .. unitName .. " has not been added to the table!")
+    end
 end
 
-function simpleEwr.addEwrByName (unitName) --adds an EWR to the ewrUnitList by it's unit name
+function simpleEwr.addEwrByPrefix (prefix) --works, needs a check if the unit is on position 1 of the group
+    for unitName, unit in pairs(mist.DBs.unitsByName) do
+
+        local _pos = string.find(unitName, prefix, 1, true)
+		--somehow the MIST unit db contains StaticObject, we check to see we only add Unit
+        
+		if _pos and _pos == 1 then --no idea, stolen from skynet
+			simpleEwr.addEwrByName(unitName)
+		end
+    
+    end
 end
 
 function simpleEwr.addEwrByTable (unitNameTable) --adds EWRs as a table ie: table = {"EWR-1", "EWR-2", "EWR-n"}
-    simpleEwr.ewrUnitList = unitNameTable
+    for k, v in pairs (unitNameTable) do 
+        simpleEwr.addEwrByName(v)
+    end
 end
 
 function simpleEwr.setUpdateInterval (seconds) --sets the interval for the repeated detection check
@@ -43,6 +61,8 @@ end
 function simpleEwr.setDetectionZone (groupName)
     simpleEwr.detectionZone = mist.getGroupPoints(groupName)
 end
+
+--logic functions
 
 function simpleEwr.getKnownTargets() -- returns the table of known targets, might be useful for the dispatcher
     return simpleEwr.knownTargets
@@ -83,33 +103,27 @@ end
 
 function simpleEwr.decider() --checks if a detected target is inside of the detection zone
     for index, vTargetTable in pairs (simpleEwr.knownTargets) do
-        --if vTargetTable.unitPosVec3 and simpleEwr.isVecInZone(vTargetTable.unitPosVec3) then
         if vTargetTable.inZone == true then
-
-            --vTargetTable.inZone = true
-
-            simpleMisc.debug("positive detection!")
+            simpleMisc.debugOutput("Decider: Found target in detectionZone, setting flag " .. simpleEwr.detectionFlag .. " to TRUE")
             simpleEwr.applyFlag()
-           
         else
-            --vTargetTable.inZone = false
-            simpleMisc.debug("negative detection!")
+            simpleMisc.debugOutput("Decider: No target in detectionZone")
         end
     end
 end
 
 function simpleEwr.isVecInZone(vec3) --returns true if a vec3 is in the detection zone
     if simpleEwr.detectionZone ~= false then --zone exists / has been defined
-        if mist.pointInPolygon(vec3 ,  simpleEwr.detectionZone) then
-            simpleMisc.debug("in zone")
+        if mist.pointInPolygon(vec3, simpleEwr.detectionZone) then
+            simpleMisc.debugOutput("TRUE: detected target is in detectionZone")
             return true
         else
-            simpleMisc.debug("not in zone")
+            simpleMisc.debugOutput("FALSE: detected target is NOT in detectionZone")
             return false
         end
     else
-        simpleMisc.debug("no zone defined")
-        return true --no idea, but it feels better than false...
+        simpleMisc.debugOutput("TRUE: no detectionZone defined")
+        return true --true because every detection should matter
     end
 end
 
@@ -120,68 +134,31 @@ function simpleEwr.applyFlag () --sets the flag to be used with the mission edit
 end
 
 function simpleEwr.readKnownTargets() --debugging...
-    simpleMisc.debug("_____________known targets____________")
+    simpleMisc.debugOutput("_____________known targets____________")
     for k, v in pairs (simpleEwr.knownTargets) do
-        simpleMisc.debug("k: " .. tostring(k) .. " v: " .. tostring(v))
+        simpleMisc.debugOutput("k: " .. tostring(k) .. " v: " .. tostring(v))
         for k2, v2 in pairs (v) do
-            simpleMisc.debug("____k2: " .. tostring(k2) .. " v2: " .. tostring(v2))
-        end
-    end
-end
-
-function simpleEwr.getEwrDebugTargets () --purely for debugging
-    for k, vUnit in pairs (simpleEwr.ewrUnitList) do
-
-        simpleMisc.debug("k: " .. k .. "; vUnit: " .. vUnit)
-
-        local _targets = Unit.getByName(vUnit):getController():getDetectedTargets(Controller.Detection.Radar)
-
-        if _targets then
-            for k2, v2 in pairs (_targets) do
-                simpleMisc.debug("____k2: " .. tostring(k2) .. "; v2: " .. tostring(v2) )
-                for k3, v3 in pairs (v2) do
-                    simpleMisc.debug ("________k3: " .. tostring(k3) .. "; v3: " .. tostring(v3) )
-
-                    if type(v3) == "table" then 
-                        for k4, v4 in pairs (v3) do
-                            simpleMisc.debug ("____________k4: " .. tostring(k4) .. "; v4: " .. tostring(v4) )
-
-                            local _id = v3.id_
-                            local _obj = v3
-                            simpleMisc.debug ("ID: " .. _id)
-                            local _name = _obj:getName()
-                            local _unit = Unit.getByName(_name)
-                            local _point = _unit:getPoint()
-                            simpleMisc.debug("vec3.x: " .. _point.x .. " vec3.y: " .. _point.y) 
-                            simpleMisc.debug ("name: " .. _name)
-
-                            --local _name = simpleEwr.getUnitNameById(_id)
-                            --simpleMisc.debug("Name: " .. _name)
-
-                        end
-                    end
-                end
-            end
+            simpleMisc.debugOutput("____k2: " .. tostring(k2) .. " v2: " .. tostring(v2))
         end
     end
 end
 
 function simpleEwr.repeater ()
-    simpleMisc.debug ("tick")
+    simpleMisc.debugOutput ("REPEATER: tick")
 
     simpleEwr.ewrDetectTargets()
     simpleEwr.decider()
 
-    --simpleEwr.readKnownTargets()
-
-    simpleMisc.debug ("tock")
+    simpleMisc.debugOutput ("REPEATER: tock")
 end
 
 do  
     local repeater = mist.scheduleFunction (simpleEwr.repeater, {}, timer.getTime() + 2, simpleEwr.clockTiming )
 
     --player input functions, should be set in ME or other file, but here for testing
-    simpleEwr.addEwrByTable ({"EWR-1", "EWR-2"})
+    simpleEwr.addEwrByName ("EWR-1")
+    simpleEwr.addEwrByTable ({"EWR-2", "EWR-3"})
+    --simpleEwr.addEwrByPrefix("EWR")
     simpleEwr.setDetectionZone("poly")
     simpleEwr.setDetectionFlag(42)
 
