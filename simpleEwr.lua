@@ -79,7 +79,6 @@ function simpleEwr.ewrDetectTargets () --iterates through the table of EWRs and 
             for i = 1, #_targets do
 
                 if _targets[i].object and _targets[i].distance == true then
-
                     local _object = _targets[i].object
 
                     if _object:getCoalition() == 2 then
@@ -99,7 +98,6 @@ function simpleEwr.ewrDetectTargets () --iterates through the table of EWRs and 
                             }
     
                             simpleEwr.knownTargets[args.objectId] = args
-
                         end
                     end
                 end
@@ -111,7 +109,7 @@ end
 function simpleEwr.decider() --checks if a detected target is inside of the detection zone
     for index, vTargetTable in pairs (simpleEwr.knownTargets) do
         if vTargetTable.inZone == true then
-            simple.debugOutput("decider: Found target in detectionZone, setting flag " .. simpleEwr.flagNumber .. " increased by 1.")
+            simple.debugOutput("decider: Found target in detectionZone")
             simpleEwr.applyFlag()
         else
             simple.debugOutput("decider: No target in detectionZone")
@@ -134,10 +132,11 @@ function simpleEwr.isVecInZone(vec3) --returns true if a vec3 is in the detectio
     end
 end
 
-function simpleEwr.applyFlag () --sets the flag to be used with the mission editor
+function simpleEwr.applyFlag () --increases the number of the 
     if simpleEwr.flagNumber ~= false then
         simpleEwr.flagCounter = simpleEwr.flagCounter + 1
         trigger.action.setUserFlag(simpleEwr.flagNumber, simpleEwr.flagCounter )
+        simple.debugOutput("applyFlag: flag: " .. simpleEwr.flagNumber .. "; value: " .. trigger.misc.getUserFlag(simpleEwr.flagNumber))
     end
 end
 
@@ -152,17 +151,14 @@ function simpleEwr.readKnownTargets() --debugging...
 end
 
 function simpleEwr.repeater ()
-    simple.debugOutput ("repeater: tick")
-
     simpleEwr.ewrDetectTargets()
     simpleEwr.decider()
 
-    simple.debugOutput ("repeater: tock")
+    simple.debugOutput ("repeater: finished")
 end
 
 function simpleEwr.eventHandler(event)
     if event.id == 30 then --event dead 8, 30 unit lost
-
         for number, ewrUnit in pairs (simpleEwr.ewrUnitList) do --checks if the dead unit is an EWR --works!
             if event.initiator:getName()  == ewrUnit then
                 table.remove(simpleEwr.ewrUnitList, number)
@@ -183,7 +179,6 @@ do
     mist.addEventHandler(simpleEwr.eventHandler)
     local repeater = mist.scheduleFunction (simpleEwr.repeater, {}, timer.getTime() + 2, simpleEwr.clockTiming )
 
-    --player input functions, should be set in ME or other file, but here for testing
     --simpleEwr.addEwrByName ("EWR-1")
     --simpleEwr.addEwrByTable ({"EWR-2", "EWR-3"})
     simpleEwr.addEwrByPrefix("EWR")
