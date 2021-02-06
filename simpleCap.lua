@@ -13,9 +13,9 @@ What it should do:
 ]]
 
 simpleCap = {}
-simpleCap.debug = true
-simpleCap.spawnPoint = {"spawnPoint"}
+simpleCap.missions = {}
 simpleCap.interceptors = {"Mig-1"}
+simpleCap.capCounter = 1
 --simpleCap.groupData = {}
 --simpleCap.groupRoute = {}
 
@@ -24,72 +24,94 @@ function simpleCap.getEwrTargets()
     return _targets
 end
 
-function simpleCap.getGroupData(groupName) --seems to work, no figure out how to create missions
-	simpleCap.groupData = mist.getGroupData(groupName)
-	simpleCap.groupRoute = mist.getGroupRoute(groupName)
-	simpleCap.groupData.groupName = "test"
-	simpleCap.groupData.route = simpleCap.groupRoute
+function simpleCap.start ()
+	simpleCap.getGroupData(simpleCap.interceptors[1])
+	simpleCap.buildInteceptMission()
+
+	simpleCap.buildMissions ()
+
+	simpleCap.spawn()
 end
 
-function simpleCap.genInterceptMission ()
+function simpleCap.buildMissions ()
+	local _targets = simpleEwr.getKnownTargets()
+	for id, data in pairs (_targets) do
 
+		local _unitPosVec2 = mist.utils.makeVec2 (data.unitPosVec3)
+		local _mission ={
+			target = data.unitName,
+			
+			["alt"] = 2000,
+			["x"] = _unitPosVec2.x,
+			["action"] = "Turning Point",
+			["alt_type"] = "BARO",
+			--["speed"] = 138.88888888889,
+			["form"] = "Turning Point",
+			["type"] = "Turning Point",
+			["y"] = _unitPosVec2.y,
+		}
+
+		table.insert(simpleCap.missions, _mission)
+
+		simple.dumpTable(simpleCap.missions)
+		
+
+
+	end
+end
+
+function simpleCap.getTargetPos()
+	local _targets = simpleCap.getEwrTargets()
+	for k, v in pairs (_targets) do
+		local _vec3 = v.unitPosVec3
+		local _vec2 = mist.utils.makeVec2(_vec3)
+		return _vec2
+	end
+end
+
+function simpleCap.getGroupData(groupName) --seems to work, no figure out how to create missions
+	simpleCap.groupData = mist.getGroupData(groupName)
+	--simpleCap.groupRoute = mist.getGroupRoute(groupName)
+	
+	simpleCap.groupData.groupName = "test" .. simpleCap.capCounter
+	simpleCap.capCounter = simpleCap.capCounter + 1
+	
+
+	simpleCap.groupData.route = {}
+	simpleCap.groupData.route[1] = {}
+	simpleCap.groupData.route[1].type = "TakeOffParking"
+	simpleCap.groupData.route[1].form = "From Parking Area"
+	simpleCap.groupData.route[1].airdromeId = 3
+
+	simpleCap.groupData.clone = true
+	simpleCap.groupData.groupId = simpleCap.capCounter + 1
+
+	simpleCap.buildInteceptMission()
+end
+
+function simpleCap.buildInteceptMission()
+	local _targetVec2 = simpleCap.getTargetPos()
+
+	simpleCap.groupData.route[2] = { 
+		["alt"] = 2000,
+		["x"] = _targetVec2.x,
+		["action"] = "Turning Point",
+		["alt_type"] = "BARO",
+		--["speed"] = 138.88888888889,
+		["form"] = "Turning Point",
+		["type"] = "Turning Point",
+		["y"] = _targetVec2.y,
+	}
 end
 
 function simpleCap.spawn()
 	mist.dynAdd( simpleCap.groupData )
+	simple.dumpTable(simpleCap.groupData)
 	--coalition.addGroup(country.id.RUSSIA, Group.Category.AIRPLANE, simpleCap.groupData)
 end
 
 
-
---addGroup() test
---[[
-
-local groupData = {
-	["visible"] = false,
-	["taskSelected"] = true,
-	["route"] = 
-	{
-	}, -- end of ["route"]
-	["groupId"] = 2,
-	["tasks"] = 
-	{
-	}, -- end of ["tasks"]
-	["hidden"] = false,
-	["units"] = 
-	{
-		[1] = 
-		{
-			["type"] = "LAV-25",
-			["transportable"] = 
-			{
-				["randomTransportable"] = false,
-			}, -- end of ["transportable"]
-			["unitId"] = 2,
-			["skill"] = "Average",
-			["y"] = 616314.28571429,
-			["x"] = -288585.71428572,
-			["name"] = "Ground Unit1",
-			["playerCanDrive"] = true,
-			["heading"] = 0.28605144170571,
-		}, -- end of [1]
-	}, -- end of ["units"]
-	["y"] = 616314.28571429,
-	["x"] = -288585.71428572,
-	["name"] = "Ground Group",
-	["start_time"] = 0,
-	["task"] = "Ground Nothing",
-  } -- end of [1]
-
-  coalition.addGroup(country.id.USA, Group.Category.GROUND, groupData)
-]]
-
-
   do
-
-	simpleCap.getGroupData(simpleCap.interceptors[1])
-
-	simpleCap.spawn()
 
 	  
 	simple.notify("simpleCap finished loading", 15)

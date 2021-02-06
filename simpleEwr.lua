@@ -111,6 +111,8 @@ function simpleEwr.decider() --checks if a detected target is inside of the dete
         if vTargetTable.inZone == true then
             simple.debugOutput("decider: Found target in detectionZone")
             simpleEwr.applyFlag()
+            --testing
+            simpleCap.start()
         else
             simple.debugOutput("decider: No target in detectionZone")
         end
@@ -178,9 +180,7 @@ end
 do  
     mist.addEventHandler(simpleEwr.eventHandler)
     local repeater = mist.scheduleFunction (simpleEwr.repeater, {}, timer.getTime() + 2, simpleEwr.clockTiming )
-
-    --simpleEwr.addEwrByName ("EWR-1")
-    --simpleEwr.addEwrByTable ({"EWR-2", "EWR-3"})
+    
     simpleEwr.addEwrByPrefix("EWR")
     simpleEwr.setDetectionZone("poly")
     simpleEwr.setDetectionFlag(42)

@@ -29,6 +29,27 @@ function simple.printVec3 (vec3)
     trigger.action.outText("vec3.x: " .. vec3.x .. " ; vec3.y: " .. vec3.y .. " ; vec3.z: " .. vec3.z, 5)
 end
 
+local function dump(table) --https://stackoverflow.com/questions/9168058/how-to-dump-a-table-to-console
+	if type(table) == 'table' then
+	   local s = '{ \n'
+  
+	   for k,v in pairs(table) do
+		  if type(k) ~= 'number' then
+			  k = '"'..k..'"'
+		  end
+		  s = s .. '['..k..'] = ' .. dump(v) .. ',\n'
+	   end
+  
+	   return s .. '}'
+	else
+	   return tostring(table)
+	end
+end
+
+function simple.dumpTable(tableIn)
+	env.info("dumpTable: \n" .. dump(tableIn))
+end
+
 do
     simple.notify("simple finished loading", 15)
 end
