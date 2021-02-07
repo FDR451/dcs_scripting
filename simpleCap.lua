@@ -13,106 +13,133 @@ What it should do:
 ]]
 
 simpleCap = {}
+simpleCap.targets = {}
 simpleCap.missions = {}
+simpleCap.updateFreq = 120
+
 simpleCap.interceptors = {"Mig-1"}
 simpleCap.capCounter = 1
 --simpleCap.groupData = {}
 --simpleCap.groupRoute = {}
 
-function simpleCap.getEwrTargets()
-    local _targets = simpleEwr.getKnownTargets()
-    return _targets
-end
+function simpleCap.buildTargets () --takes the output from simpleEwr and adds more data fields, but runs more rarely. This way it should have less performance impact
+	local _ewrTargets = simpleEwr.getKnownTargets()
+	for id, data in pairs (_ewrTargets) do
 
-function simpleCap.start ()
-	simpleCap.getGroupData(simpleCap.interceptors[1])
-	simpleCap.buildInteceptMission()
+		local _args = {
+			targetId = data.objectId,
+			targetName = data.unitName,
+			targetType = Unit.getByName(data.unitName):getDesc().displayName,
+			targetInZone = data.inZone,
 
-	simpleCap.buildMissions ()
+			targetPosVec3 = data.unitPosVec3,
+			targetPosVec2 = mist.utils.makeVec2 (data.unitPosVec3),
+			targetVelVec3 = data.unitVelVec3,
 
-	simpleCap.spawn()
-end
-
-function simpleCap.buildMissions ()
-	local _targets = simpleEwr.getKnownTargets()
-	for id, data in pairs (_targets) do
-
-		local _unitPosVec2 = mist.utils.makeVec2 (data.unitPosVec3)
-		local _mission ={
-			target = data.unitName,
-			
-			["alt"] = 2000,
-			["x"] = _unitPosVec2.x,
-			["action"] = "Turning Point",
-			["alt_type"] = "BARO",
-			--["speed"] = 138.88888888889,
-			["form"] = "Turning Point",
-			["type"] = "Turning Point",
-			["y"] = _unitPosVec2.y,
+			targetSpeed = mist.vec.mag( data.unitVelVec3 ),
+			targetHdg = math.atan2 (data.unitVelVec3.x, data.unitVelVec3.z),
+			targetIntPosVec2 = mist.utils.makeVec2 (data.unitPosVec3), --temp --interception point
+			targetPrio = 1, --maybe for later
 		}
 
-		table.insert(simpleCap.missions, _mission)
-
-		simple.dumpTable(simpleCap.missions)
-		
-
+		simpleCap.targets[id] = _args
 
 	end
+	simple.dumpTable(simpleCap.targets)
 end
 
-function simpleCap.getTargetPos()
-	local _targets = simpleCap.getEwrTargets()
-	for k, v in pairs (_targets) do
-		local _vec3 = v.unitPosVec3
-		local _vec2 = mist.utils.makeVec2(_vec3)
-		return _vec2
+function simpleCap.buildMissions () --just WPs on the interception point for now proof of concept
+	simpleCap.missions = {}
+
+	for id, data in pairs (simpleCap.targets) do
+		if data.targetInZone == true then --only build missions for targets in the zone
+
+			local _argsWp = {
+				["id"] = id,
+				["alt"] = data.targetPosVec3.y,
+				["x"] = data.targetIntPosVec2.x,
+				["y"] = data.targetIntPosVec2.y,
+
+				["action"] = "Turning Point",
+				["alt_type"] = "BARO",
+				["speed"] = 900,
+				["form"] = "Turning Point",
+				["type"] = "Turning Point",
+
+				["task"] = { 
+					["id"] = 'ComboTask',
+					["params"] = { 
+						["tasks"] = { 
+						},
+					},
+				},
+
+			}
+
+			table.insert(simpleCap.missions, _argsWp)
+
+		end
 	end
+	simple.dumpTable(simpleCap.missions)
 end
 
-function simpleCap.getGroupData(groupName) --seems to work, no figure out how to create missions
-	simpleCap.groupData = mist.getGroupData(groupName)
-	--simpleCap.groupRoute = mist.getGroupRoute(groupName)
-	
-	simpleCap.groupData.groupName = "test" .. simpleCap.capCounter
-	simpleCap.capCounter = simpleCap.capCounter + 1
-	
-
-	simpleCap.groupData.route = {}
-	simpleCap.groupData.route[1] = {}
-	simpleCap.groupData.route[1].type = "TakeOffParking"
-	simpleCap.groupData.route[1].form = "From Parking Area"
-	simpleCap.groupData.route[1].airdromeId = 3
-
-	simpleCap.groupData.clone = true
-	simpleCap.groupData.groupId = simpleCap.capCounter + 1
-
-	simpleCap.buildInteceptMission()
-end
-
-function simpleCap.buildInteceptMission()
-	local _targetVec2 = simpleCap.getTargetPos()
-
-	simpleCap.groupData.route[2] = { 
-		["alt"] = 2000,
-		["x"] = _targetVec2.x,
-		["action"] = "Turning Point",
-		["alt_type"] = "BARO",
-		--["speed"] = 138.88888888889,
-		["form"] = "Turning Point",
-		["type"] = "Turning Point",
-		["y"] = _targetVec2.y,
+function simpleCap.buildSpawnPoint() --temp
+	local _spawnPoint = {
+		type = "TakeOffParkingHot",
+		form = "From Parking Area Hot",
+		action = "From Parking Area Hot",
+		airdromeId = 3,
+		["task"] = {  --task so that the unit does CAP
+			["id"] = 'ComboTask',
+			["params"] = { 
+				["tasks"] = { 
+					[1] = { 
+						["enabled"] = true,
+						["key"] = 'CAP',
+						["id"] = 'EngageTargets',
+						["number"] = 1,
+						["auto"] = true,
+						["params"] = { 
+							["targetTypes"] = { 
+								[1] = 'Air',
+							},
+						["priority"] = 0,
+						},
+					},
+				},
+			},
+		},
 	}
+	return _spawnPoint
 end
 
-function simpleCap.spawn()
-	mist.dynAdd( simpleCap.groupData )
-	simple.dumpTable(simpleCap.groupData)
-	--coalition.addGroup(country.id.RUSSIA, Group.Category.AIRPLANE, simpleCap.groupData)
+function spawnTemp(groupName) --temp just to see if it all works.
+	local _args = mist.getGroupData(groupName)
+
+	_args.clone = true
+	_args.groupName = "ceptor-" .. simpleCap.capCounter
+	simpleCap.capCounter = simpleCap.capCounter + 1
+
+	_args.route = {
+		[1] = simpleCap.buildSpawnPoint(),
+		[2] = simpleCap.missions[math.random(#simpleCap.missions)],
+	}
+
+	simple.dumpTable(_args)
+	mist.dynAdd(_args)
 end
 
+function simpleCap.repeater()
+	simpleCap.buildTargets ()
+	simpleCap.buildMissions ()
 
-  do
+	spawnTemp(simpleCap.interceptors[1]) --works
 
-	  
+	simple.debugOutput ("capRepeater: finished")
+end
+
+do
+	local repeater = mist.scheduleFunction (simpleCap.repeater, {}, timer.getTime() + simpleCap.updateFreq, simpleCap.updateFreq )
+ 
 	simple.notify("simpleCap finished loading", 15)
-  end
+end

@@ -91,10 +91,6 @@ function simpleEwr.ewrDetectTargets () --iterates through the table of EWRs and 
                                 unitVelVec3 = _object:getVelocity(),
                                 detectionTime = timer.getTime(),
                                 inZone = simpleEwr.isVecInZone(_object:getPoint()),
-    
-                                --probalby not saved here, no reason to run the calculation every time a target is detected. Just run it once it is needed for the intercept based on the last known position and heading
-                                unitSpeed = mist.vec.mag(_object:getVelocity()), --speed in m/s
-                                unitHeading = math.atan2 (_object:getVelocity().x, _object:getVelocity().z), 
                             }
     
                             simpleEwr.knownTargets[args.objectId] = args
@@ -112,7 +108,7 @@ function simpleEwr.decider() --checks if a detected target is inside of the dete
             simple.debugOutput("decider: Found target in detectionZone")
             simpleEwr.applyFlag()
             --testing
-            simpleCap.start()
+            --simpleCap.start()
         else
             simple.debugOutput("decider: No target in detectionZone")
         end
@@ -156,7 +152,7 @@ function simpleEwr.repeater ()
     simpleEwr.ewrDetectTargets()
     simpleEwr.decider()
 
-    simple.debugOutput ("repeater: finished")
+    simple.debugOutput ("ewrRepeater: finished")
 end
 
 function simpleEwr.eventHandler(event)

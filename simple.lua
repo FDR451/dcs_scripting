@@ -1,5 +1,5 @@
 simple = {}
-simple.debug = true
+simple.debug = false
 
 function simple.notify(message, duration) --used this so often now... 
     trigger.action.outText(tostring(message), duration)
@@ -25,7 +25,7 @@ function simple.smokeVec3 (vec3) --puts smoke at vec3 for debugging
     trigger.action.smoke(_vec3GL,3)
 end
 
-function simple.printVec3 (vec3)
+function simple.printVec3 (vec3) --prints a vec3 to the message box
     trigger.action.outText("vec3.x: " .. vec3.x .. " ; vec3.y: " .. vec3.y .. " ; vec3.z: " .. vec3.z, 5)
 end
 
@@ -46,8 +46,8 @@ local function dump(table) --https://stackoverflow.com/questions/9168058/how-to-
 	end
 end
 
-function simple.dumpTable(tableIn)
-	env.info("dumpTable: \n" .. dump(tableIn))
+function simple.dumpTable(table) --call this to dumb a table
+	env.info("dumpTable: \n" .. dump(table))
 end
 
 do
