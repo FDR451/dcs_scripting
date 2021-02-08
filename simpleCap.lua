@@ -15,18 +15,17 @@ What it should do:
 simpleCap = {}
 simpleCap.targets = {}
 simpleCap.missions = {}
-simpleCap.updateFreq = 120
+simpleCap.updateFreq = 60
 
 simpleCap.interceptors = {"Mig-1"}
-simpleCap.capCounter = 1
---simpleCap.groupData = {}
---simpleCap.groupRoute = {}
 
 function simpleCap.buildTargets () --takes the output from simpleEwr and adds more data fields, but runs more rarely. This way it should have less performance impact
 	local _ewrTargets = simpleEwr.getKnownTargets()
 	for id, data in pairs (_ewrTargets) do
 
 		local _args = {
+			targetInUse = false,
+
 			targetId = data.objectId,
 			targetName = data.unitName,
 			targetType = Unit.getByName(data.unitName):getDesc().displayName,
@@ -55,7 +54,7 @@ function simpleCap.buildMissions () --just WPs on the interception point for now
 		if data.targetInZone == true then --only build missions for targets in the zone
 
 			local _argsWp = {
-				["id"] = id,
+				["id"] = id, --not part of the WP itself, but might be useful later on
 				["alt"] = data.targetPosVec3.y,
 				["x"] = data.targetIntPosVec2.x,
 				["y"] = data.targetIntPosVec2.y,
@@ -66,10 +65,10 @@ function simpleCap.buildMissions () --just WPs on the interception point for now
 				["form"] = "Turning Point",
 				["type"] = "Turning Point",
 
-				["task"] = { 
+				["task"] = {
 					["id"] = 'ComboTask',
-					["params"] = { 
-						["tasks"] = { 
+					["params"] = {
+						["tasks"] = {
 						},
 					},
 				},
@@ -83,24 +82,60 @@ function simpleCap.buildMissions () --just WPs on the interception point for now
 	simple.dumpTable(simpleCap.missions)
 end
 
-function simpleCap.buildSpawnPoint() --temp
+function simpleCap.repeater()
+	simpleCap.buildTargets ()
+	simpleCap.buildMissions ()
+
+	s1:getMission() --temp
+
+	simple.debugOutput ("capRepeater: finished")
+end
+
+--[[
+
+	squadrons: probably object orientated
+	attributes:
+	tasking (AA, AG, multi role), homebase, resources (number of aircraft as for a start), airframes
+
+
+]]
+
+simpleCap.squadron = {
+	name = 'default',
+	spawnCounter = 1,
+	homebase = 3, --home base ID see
+	task = 'gci', --general purpse of the squadron
+	number = 0, --number of available airframes (spawns)
+	template = {"Mig-1"}, --what templates to use
+}
+
+function simpleCap.squadron:new (args)
+    args = args or {}   -- create object if user does not provide one
+    setmetatable(args, self)
+    self.__index = self
+
+	simple.debugOutput('New squadron created. Name:' .. args.name .. '; homebase: ' .. args.homebase .. '; tasking: ' .. args.task .. '; number: ' .. args.number .. '; template: ' .. args.template[1])
+    return args
+end
+
+function simpleCap.squadron:genSpawnCapWp()
 	local _spawnPoint = {
-		type = "TakeOffParkingHot",
-		form = "From Parking Area Hot",
-		action = "From Parking Area Hot",
-		airdromeId = 3,
-		["task"] = {  --task so that the unit does CAP
+		['type'] = "TakeOffParkingHot",
+		['form'] = "From Parking Area Hot",
+		['action'] = "From Parking Area Hot",
+		['airdromeId'] = self.homebase,
+		["task"] = {  --task so that the unit does CAP (enroutetask)
 			["id"] = 'ComboTask',
-			["params"] = { 
-				["tasks"] = { 
-					[1] = { 
+			["params"] = {
+				["tasks"] = {
+					[1] = {
 						["enabled"] = true,
 						["key"] = 'CAP',
 						["id"] = 'EngageTargets',
 						["number"] = 1,
 						["auto"] = true,
-						["params"] = { 
-							["targetTypes"] = { 
+						["params"] = {
+							["targetTypes"] = {
 								[1] = 'Air',
 							},
 						["priority"] = 0,
@@ -113,33 +148,46 @@ function simpleCap.buildSpawnPoint() --temp
 	return _spawnPoint
 end
 
-function spawnTemp(groupName) --temp just to see if it all works.
-	local _args = mist.getGroupData(groupName)
+function simpleCap.squadron:genCapMissionWp()
 
-	_args.clone = true
-	_args.groupName = "ceptor-" .. simpleCap.capCounter
-	simpleCap.capCounter = simpleCap.capCounter + 1
-
-	_args.route = {
-		[1] = simpleCap.buildSpawnPoint(),
-		[2] = simpleCap.missions[math.random(#simpleCap.missions)],
-	}
-
-	simple.dumpTable(_args)
-	mist.dynAdd(_args)
 end
 
-function simpleCap.repeater()
-	simpleCap.buildTargets ()
-	simpleCap.buildMissions ()
+function simpleCap.squadron:getMission()
+	if simpleCap.missions ~= {} then --missions are available
 
-	spawnTemp(simpleCap.interceptors[1]) --works
+		local _mission = {
+			[1] = self:genSpawnCapWp(), --spawn WP
+			[2] = simpleCap.missions[math.random(#simpleCap.missions)]  --mission WP
+		}
 
-	simple.debugOutput ("capRepeater: finished")
+		self:spawn(_mission)
+
+	else --no missions available
+		simple.debugOutput('no missions found')
+	end
+
 end
+
+function simpleCap.squadron:spawn(mission)
+	local _groupData = mist.getGroupData(self.template[math.random(#self.template)])
+	_groupData.clone = true
+	_groupData.groupName = self.name .. "-" .. self.spawnCounter
+	self.spawnCounter = self.spawnCounter + 1
+
+	_groupData.route = mission
+
+	simple.dumpTable(_groupData)
+	mist.dynAdd(_groupData)
+end
+
+
 
 do
-	local repeater = mist.scheduleFunction (simpleCap.repeater, {}, timer.getTime() + simpleCap.updateFreq, simpleCap.updateFreq )
- 
-	simple.notify("simpleCap finished loading", 15)
+	local repeater = mist.scheduleFunction (simpleCap.repeater, {}, timer.getTime() + simpleCap.updateFreq, simpleCap.updateFreq ) --starts the repeater
+
+	s1 = simpleCap.squadron:new {name = 'hummus', homebase = 3, task = 'gci', number = 2, template = {"Mig-1"} }
+
+	--mist.scheduleFunction (s1.getMission(), {s1}, timer.getTime() + 180, 180 ) --temp testing
+
+	simple.notify("simpleCap finished loading", 15) --keep at the end of the file
 end

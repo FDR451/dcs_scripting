@@ -102,26 +102,27 @@ function simpleEwr.ewrDetectTargets () --iterates through the table of EWRs and 
     end
 end
 
-function simpleEwr.decider() --checks if a detected target is inside of the detection zone
+function simpleEwr.decider() --runs further functions if a target is inside of a detection zone, no idea if useful tbh
+    local notInZone = 0
+    local inZone = 0
     for index, vTargetTable in pairs (simpleEwr.knownTargets) do
         if vTargetTable.inZone == true then
-            simple.debugOutput("decider: Found target in detectionZone")
-            simpleEwr.applyFlag()
-            --testing
-            --simpleCap.start()
+            inZone = inZone + 1
+            if simpleEwr.flagNumber ~= false then
+                simpleEwr.applyFlag()
+            end
         else
-            simple.debugOutput("decider: No target in detectionZone")
+            notInZone = notInZone + 1
         end
     end
+    simple.debugOutput("decider: \n" .. inZone .. " targets inside the detection zone. \n" .. notInZone .. ' targets outside of the detection zone.')
 end
 
 function simpleEwr.isVecInZone(vec3) --returns true if a vec3 is in the detection zone
     if simpleEwr.detectionZone ~= false then --zone exists / has been defined
         if mist.pointInPolygon(vec3, simpleEwr.detectionZone) then
-            simple.debugOutput("isVecInZone: in detectionZone")
             return true
         else
-            simple.debugOutput("isVecInZone: NOT in detectionZone")
             return false
         end
     else
@@ -131,21 +132,9 @@ function simpleEwr.isVecInZone(vec3) --returns true if a vec3 is in the detectio
 end
 
 function simpleEwr.applyFlag () --increases the number of the 
-    if simpleEwr.flagNumber ~= false then
-        simpleEwr.flagCounter = simpleEwr.flagCounter + 1
-        trigger.action.setUserFlag(simpleEwr.flagNumber, simpleEwr.flagCounter )
-        simple.debugOutput("applyFlag: flag: " .. simpleEwr.flagNumber .. "; value: " .. trigger.misc.getUserFlag(simpleEwr.flagNumber))
-    end
-end
-
-function simpleEwr.readKnownTargets() --debugging...
-    simple.debugOutput("_____________known targets____________")
-    for k, v in pairs (simpleEwr.knownTargets) do
-        simple.debugOutput("k: " .. tostring(k) .. " v: " .. tostring(v))
-        for k2, v2 in pairs (v) do
-            simple.debugOutput("____k2: " .. tostring(k2) .. " v2: " .. tostring(v2))
-        end
-    end
+    simpleEwr.flagCounter = simpleEwr.flagCounter + 1
+    trigger.action.setUserFlag(simpleEwr.flagNumber, simpleEwr.flagCounter )
+    simple.debugOutput("applyFlag: flag: " .. simpleEwr.flagNumber .. "; value: " .. trigger.misc.getUserFlag(simpleEwr.flagNumber))
 end
 
 function simpleEwr.repeater ()
@@ -179,7 +168,7 @@ do
     
     simpleEwr.addEwrByPrefix("EWR")
     simpleEwr.setDetectionZone("poly")
-    simpleEwr.setDetectionFlag(42)
+    --simpleEwr.setDetectionFlag(42)
 
     simple.notify("simpleEwr finished loading", 15) --keep at the end of the script
 end

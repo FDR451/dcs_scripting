@@ -1,5 +1,5 @@
 simple = {}
-simple.debug = false
+simple.debug = true
 
 function simple.notify(message, duration) --used this so often now... 
     trigger.action.outText(tostring(message), duration)
