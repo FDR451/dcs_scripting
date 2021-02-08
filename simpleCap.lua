@@ -6,8 +6,9 @@
 simpleCap = {}
 simpleCap.targets = {}
 simpleCap.missions = {}
-simpleCap.updateFreq = 30
+simpleCap.updateFreq = 12
 simpleCap.ato = {}
+simpleCap.repeaterTable = {}
 
 simpleCap.interceptors = {"Mig-1"}
 
@@ -68,7 +69,11 @@ function simpleCap.repeater()
 	simpleCap.buildTargets ()
 	simpleCap.genAto()
 	
-	s1:checkAto()
+	for k, v in pairs (simpleCap.repeaterTable) do
+		v.func(v.args)
+	end
+	
+
 
 	simple.debugOutput ("capRepeater: finished")
 end
@@ -82,7 +87,7 @@ end
 ]]
 
 simpleCap.squadron = {
-	name = '',
+	name = 'default',
 	spawnCounter = 0,
 	homebase = 0, --home base ID see
 	task = '', --general purpse of the squadron
@@ -99,7 +104,14 @@ function simpleCap.squadron:new (args)
     return args
 end
 
-function simpleCap.squadron:checkAto()
+function simpleCap.squadron:checkIn() --should be part of new, but doesn't want to work...
+	simpleCap.repeaterTable[#simpleCap.repeaterTable + 1] = {
+		func = self.checkAto,
+		args = self,
+	}
+end
+
+function simpleCap.squadron.checkAto(self)
 	if self.ressources >= 1 then
 		for id, data in pairs (simpleCap.ato) do
 			if data.inUse == false then
@@ -202,6 +214,9 @@ do
 	local repeater = mist.scheduleFunction (simpleCap.repeater, {}, timer.getTime() + simpleCap.updateFreq, simpleCap.updateFreq ) --starts the repeater
 
 	s1 = simpleCap.squadron:new {name = 'Hummus', homebase = 3, task = 'gci', ressources = 2, template = {"Mig-1"} }
+	s1:checkIn()
+	s2 = simpleCap.squadron:new {name = 'Couscous', homebase = 4, task = 'gci', ressources = 2, template = {"Mig-1"} }
+	s2:checkIn()
 
 	simple.notify("simpleCap finished loading", 15) --keep at the end of the file
 end
