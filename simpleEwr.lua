@@ -108,7 +108,7 @@ function simpleEwr.decider() --runs further functions if a target is inside of a
     for index, vTargetTable in pairs (simpleEwr.knownTargets) do
         if vTargetTable.inZone == true then
             inZone = inZone + 1
-            if simpleEwr.flagNumber ~= false then
+            if simpleEwr.flagNumber ~= false then --only run if a flag has been set
                 simpleEwr.applyFlag()
             end
         else
@@ -127,7 +127,7 @@ function simpleEwr.isVecInZone(vec3) --returns true if a vec3 is in the detectio
         end
     else
         simple.debugOutput("isVecInZone: no detectionZone defined")
-        return true --true because every detection should matter
+        return true
     end
 end
 

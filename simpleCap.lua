@@ -1,21 +1,12 @@
 --[[
--- https://wiki.hoggitworld.com/view/DCS_task_mission
-
---https://wiki.hoggitworld.com/view/MIST_getGroupData
---https://wiki.hoggitworld.com/view/DCS_func_addGroup
-
-What it should do:
-    read ME placed templates for their group groupData
-    modify this groupData for TO in different airports
-    create missions for them to do
-        missions should be based on simpleEwr's information, mainly position and direction of detected targets
-
+	A simple dispatcher to be used togehter with simpleEwr
+	v0.1
 ]]
 
 simpleCap = {}
 simpleCap.targets = {}
 simpleCap.missions = {}
-simpleCap.updateFreq = 60
+simpleCap.updateFreq = 30
 
 simpleCap.interceptors = {"Mig-1"}
 
@@ -23,68 +14,35 @@ function simpleCap.buildTargets () --takes the output from simpleEwr and adds mo
 	local _ewrTargets = simpleEwr.getKnownTargets()
 	for id, data in pairs (_ewrTargets) do
 
-		local _args = {
-			targetInUse = false,
+		if data.inZone == true then --only build target list for targets that are in the zone
 
-			targetId = data.objectId,
-			targetName = data.unitName,
-			targetType = Unit.getByName(data.unitName):getDesc().displayName,
-			targetInZone = data.inZone,
+			local _args = {
 
-			targetPosVec3 = data.unitPosVec3,
-			targetPosVec2 = mist.utils.makeVec2 (data.unitPosVec3),
-			targetVelVec3 = data.unitVelVec3,
+				targetId = data.objectId,
+				targetName = data.unitName,
+				targetType = Unit.getByName(data.unitName):getDesc().displayName,
+				targetInZone = data.inZone,
 
-			targetSpeed = mist.vec.mag( data.unitVelVec3 ),
-			targetHdg = math.atan2 (data.unitVelVec3.x, data.unitVelVec3.z),
-			targetIntPosVec2 = mist.utils.makeVec2 (data.unitPosVec3), --temp --interception point
-			targetPrio = 1, --maybe for later
-		}
+				targetPosVec3 = data.unitPosVec3,
+				targetPosVec2 = mist.utils.makeVec2 (data.unitPosVec3),
+				targetVelVec3 = data.unitVelVec3,
 
-		simpleCap.targets[id] = _args
-
-	end
-	simple.dumpTable(simpleCap.targets)
-end
-
-function simpleCap.buildMissions () --just WPs on the interception point for now proof of concept
-	simpleCap.missions = {}
-
-	for id, data in pairs (simpleCap.targets) do
-		if data.targetInZone == true then --only build missions for targets in the zone
-
-			local _argsWp = {
-				["id"] = id, --not part of the WP itself, but might be useful later on
-				["alt"] = data.targetPosVec3.y,
-				["x"] = data.targetIntPosVec2.x,
-				["y"] = data.targetIntPosVec2.y,
-
-				["action"] = "Turning Point",
-				["alt_type"] = "BARO",
-				["speed"] = 900,
-				["form"] = "Turning Point",
-				["type"] = "Turning Point",
-
-				["task"] = {
-					["id"] = 'ComboTask',
-					["params"] = {
-						["tasks"] = {
-						},
-					},
-				},
-
+				targetSpeed = mist.vec.mag( data.unitVelVec3 ),
+				targetHdg = math.atan2 (data.unitVelVec3.x, data.unitVelVec3.z),
+				targetIntPosVec2 = mist.utils.makeVec2 (data.unitPosVec3), --temp --interception point
+				targetPrio = 1, --maybe for later
 			}
 
-			table.insert(simpleCap.missions, _argsWp)
+			simpleCap.targets[id] = _args
 
 		end
+
 	end
-	simple.dumpTable(simpleCap.missions)
+	--simple.dumpTable(simpleCap.targets)
 end
 
 function simpleCap.repeater()
 	simpleCap.buildTargets ()
-	simpleCap.buildMissions ()
 
 	s1:getMission() --temp
 
@@ -95,8 +53,7 @@ end
 
 	squadrons: probably object orientated
 	attributes:
-	tasking (AA, AG, multi role), homebase, resources (number of aircraft as for a start), airframes
-
+	tasking (AA, AG, multi role), homebase, resources (number of aircraft as for a start), airframe
 
 ]]
 
@@ -105,7 +62,7 @@ simpleCap.squadron = {
 	spawnCounter = 1,
 	homebase = 3, --home base ID see
 	task = 'gci', --general purpse of the squadron
-	number = 0, --number of available airframes (spawns)
+	ressources = 0, --number of available airframes (spawns)
 	template = {"Mig-1"}, --what templates to use
 }
 
@@ -114,7 +71,7 @@ function simpleCap.squadron:new (args)
     setmetatable(args, self)
     self.__index = self
 
-	simple.debugOutput('New squadron created. Name:' .. args.name .. '; homebase: ' .. args.homebase .. '; tasking: ' .. args.task .. '; number: ' .. args.number .. '; template: ' .. args.template[1])
+	simple.debugOutput('New squadron created. Name:' .. args.name .. '; homebase: ' .. args.homebase .. '; tasking: ' .. args.task .. '; ressources: ' .. args.ressources .. '; template: ' .. args.template[1])
     return args
 end
 
@@ -148,24 +105,56 @@ function simpleCap.squadron:genSpawnCapWp()
 	return _spawnPoint
 end
 
-function simpleCap.squadron:genCapMissionWp()
-
+function simpleCap.squadron:genCapMissionWp(targetId)
+	local _targetWp = {
+		["alt"] = 4000, --high enough not to have problems anywhere in DCS
+		["x"] = simpleCap.targets[targetId].targetIntPosVec2.x,
+		["y"] = simpleCap.targets[targetId].targetIntPosVec2.y,
+		["action"] = "Turning Point",
+		["alt_type"] = "BARO",
+		["speed"] = 900,
+		["form"] = "Turning Point",
+		["type"] = "Turning Point",
+		["task"] = {
+			["id"] = 'ComboTask',
+			["params"] = {
+				["tasks"] = {
+				},
+			},
+		},
+	}
+	return _targetWp
 end
 
-function simpleCap.squadron:getMission()
-	if simpleCap.missions ~= {} then --missions are available
+function simpleCap.squadron:getMission() --in use does not work, because simpleCap overrides the function again and again, need a better solution
 
-		local _mission = {
-			[1] = self:genSpawnCapWp(), --spawn WP
-			[2] = simpleCap.missions[math.random(#simpleCap.missions)]  --mission WP
-		}
+	if self.ressources >= 1 then --only when airframes are available
+		for id, data in pairs (simpleCap.targets) do
+			if data.targetInUse ~= true and self.ressources >= 1 then
 
-		self:spawn(_mission)
+				simple.dumpTable(simpleCap.targets)
 
-	else --no missions available
-		simple.debugOutput('no missions found')
+				local _mission = {
+					[1] = self:genSpawnCapWp(),
+					[2] = self:genCapMissionWp(data.targetId),
+				}
+
+				self:spawn(_mission)
+				self.ressources = self.ressources - 1
+				
+				simpleCap.targets[id].targetInUse = true --doesn't work right now
+
+				simple.dumpTable(simpleCap.targets)
+
+				simple.debugOutput('getMission: ' .. self.name .. '-squadron is launching fighters to attack ' .. data.targetName .. '.')
+
+			else --all targets are already tasked for
+				simple.debugOutput('getMission: ' .. self.name .. '-squadron could NOT find a suitable target.')
+			end
+		end
+	else --no airframes
+		simple.debugOutput('getMission: ' .. self.name .. '-squadron has ' .. self.ressources .. ' airframes.')
 	end
-
 end
 
 function simpleCap.squadron:spawn(mission)
@@ -176,7 +165,7 @@ function simpleCap.squadron:spawn(mission)
 
 	_groupData.route = mission
 
-	simple.dumpTable(_groupData)
+	--simple.dumpTable(_groupData)
 	mist.dynAdd(_groupData)
 end
 
@@ -185,9 +174,7 @@ end
 do
 	local repeater = mist.scheduleFunction (simpleCap.repeater, {}, timer.getTime() + simpleCap.updateFreq, simpleCap.updateFreq ) --starts the repeater
 
-	s1 = simpleCap.squadron:new {name = 'hummus', homebase = 3, task = 'gci', number = 2, template = {"Mig-1"} }
-
-	--mist.scheduleFunction (s1.getMission(), {s1}, timer.getTime() + 180, 180 ) --temp testing
+	s1 = simpleCap.squadron:new {name = 'Hummus', homebase = 3, task = 'gci', ressources = 2, template = {"Mig-1"} }
 
 	simple.notify("simpleCap finished loading", 15) --keep at the end of the file
 end
