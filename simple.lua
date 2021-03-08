@@ -29,6 +29,13 @@ function simple.printVec3 (vec3) --prints a vec3 to the message box
     trigger.action.outText("vec3.x: " .. vec3.x .. " ; vec3.y: " .. vec3.y .. " ; vec3.z: " .. vec3.z, 5)
 end
 
+function simple.getAltitudeAgl (vec3) --returns the altitude AGL of a given vec3
+    local _vec3GL = mist.utils.makeVec3GL(vec3)
+    local output = vec3.y - _vec3GL.y
+    simple.debugOutput ("getAltitudeAgl: altitude is " .. output .. "m AGL.")
+    return output
+end
+
 local function dump(table) --https://stackoverflow.com/questions/9168058/how-to-dump-a-table-to-console
 	if type(table) == 'table' then
 	   local s = '{ \n'

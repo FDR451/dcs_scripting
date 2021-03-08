@@ -11,6 +11,7 @@ simpleEwr = {}
 simpleEwr.ewrUnitList = {} --{"EWR-1", "EWR-2"}
 simpleEwr.knownTargets = {} --table of known targets
 simpleEwr.clockTiming = 6 --tiem between checks, lower interval higher workload
+simpleEwr.safeAlt = 0
 simpleEwr.detectionZone = false --false until set
 
 simpleEwr.flagNumber = false --false until set
@@ -58,12 +59,17 @@ function simpleEwr.setDetectionFlag (flagNumber) --sets the flag that should be 
     simpleEwr.flagNumber = flagNumber
 end
 
-function simpleEwr.setDetectionZone (groupName)
+function simpleEwr.setDetectionZone (groupName) --defines the zone, ie the border of a country, in which the EWR network works
     if Group.getByName(groupName) then
         simpleEwr.detectionZone = mist.getGroupPoints(groupName)
     else
         simple.errorOutput("setDetectionZone: tried to add a zone that is not a group in the ME. groupName: " .. groupName)
     end
+end
+
+function simpleEwr.setSafeAltitude (meters) --sets the safe altitude AGL that will be ignored. So anything closer than 50 or so meters to the ground will not be picked up by simpleEwr
+    simpleEwr.safeAlt = meters
+    simple.debugOutput ("setSafeAltitude: set to " .. meters)
 end
 
 --logic functions
@@ -75,25 +81,29 @@ end
 function simpleEwr.ewrDetectTargets () --iterates through the table of EWRs and checks if they detect something, if they detect an aircraft it gets handed off to
     for k, vEwrUnit in pairs (simpleEwr.ewrUnitList) do
         local _targets = Unit.getByName(vEwrUnit):getController():getDetectedTargets(Controller.Detection.Radar)
-        if _targets then
+        if _targets then --if targets are detected
             for i = 1, #_targets do
 
-                if _targets[i].object and _targets[i].distance == true then
+                if _targets[i].object and _targets[i].distance == true then --if the distance is known and the target is an object
                     local _object = _targets[i].object
 
-                    if _object:getCoalition() == 2 then
+                    if _object:getCoalition() == 2 then --only blue coalition
                         if Unit.getByName(_object:getName()) then --check if object is a unit
 
-                            local args = {
-                                objectId = _object.id_,
-                                unitName = _object:getName(),
-                                unitPosVec3 = _object:getPoint(),
-                                unitVelVec3 = _object:getVelocity(),
-                                detectionTime = timer.getTime(),
-                                inZone = simpleEwr.isVecInZone(_object:getPoint()),
-                            }
-    
-                            simpleEwr.knownTargets[args.objectId] = args
+                            if simple.getAltitudeAgl(_object:getPoint()) > simpleEwr.safeAlt then
+
+                                local args = {
+                                    objectId = _object.id_,
+                                    unitName = _object:getName(),
+                                    unitPosVec3 = _object:getPoint(),
+                                    unitVelVec3 = _object:getVelocity(),
+                                    detectionTime = timer.getTime(),
+                                    inZone = simpleEwr.isVecInZone(_object:getPoint()),
+                                }
+        
+                                simpleEwr.knownTargets[args.objectId] = args
+
+                            end
                         end
                     end
                 end
@@ -166,9 +176,17 @@ do
     mist.addEventHandler(simpleEwr.eventHandler)
     local repeater = mist.scheduleFunction (simpleEwr.repeater, {}, timer.getTime() + 2, simpleEwr.clockTiming )
     
-    simpleEwr.addEwrByPrefix("EWR")
-    simpleEwr.setDetectionZone("poly")
+    --[[
+
+    --TESTING
+    --simpleEwr.addEwrByPrefix("EWR")
+    --simpleEwr.setDetectionZone("poly")
+    --simpleEwr.setSafeAltitude(50)
     --simpleEwr.setDetectionFlag(42)
+
+    --end Test
+
+    ]]
 
     simple.notify("simpleEwr finished loading", 15) --keep at the end of the script
 end
