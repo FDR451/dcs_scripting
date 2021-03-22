@@ -1,11 +1,13 @@
 TODO:
 
 simpleEwr:
-    remove destroyed units
-    remove units that left the zone
+    remove destroyed units --done
+    remove units that left the zone --not sure if I like the idea myself
+    remove units that have not been detected for a while --done
 
 simpleCap:
     remove destroyed units from ATO
+    remove units outside of the AO from ATO
     refresh the interceptions points periodically
 
     add a landing waypoint

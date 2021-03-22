@@ -42,12 +42,12 @@ function simpleCap.buildTargets () --takes the output from simpleEwr and adds mo
 	end
 
 
-	--seems to work
-	for id, data in pairs (simpleCap.targets) do --removes targets that are no longer detected by simpleEwr
+	--removes targets that are no longer detected by simpleEwr
+	for id, data in pairs (simpleCap.targets) do
 		if _ewrTargets[id] then --simpleEwr has a target with the same ID as capTargets, therefore the target is still detected
 		else --no more id matching = ewr does not know the target anymore
 			simpleCap.targets[id] = nil
-			simple.dumpTable(simpleCap.targets) --debug
+			--simple.dumpTable(simpleCap.targets) --debug
 			simple.debugOutput ("target removed from capTargets")
 		end
 	end
@@ -92,7 +92,7 @@ function simpleCap.genAto() --takes the simpleCap.targets table and creates it i
 
 
 			--simpleCap.ato[id] = nil --temp
-			simple.debugOutput ("target removed from capTargets")
+			simple.debugOutput ("target removed from ATO")
 		end
 	end
 
@@ -133,7 +133,7 @@ simpleCap.squadron = {
 	template = {}, --what templates to use
 }
 
-function simpleCap.squadron:new (args)
+function simpleCap.squadron:new (args) --creates a new squadron
     args = args or {}   -- create object if user does not provide one
     setmetatable(args, self)
     self.__index = self
@@ -200,6 +200,10 @@ function simpleCap.squadron:genSpawnCapWp()
 		},
 	}
 	return _spawnPoint
+end
+
+function simpleCap.squadron:genLandingWp()
+
 end
 
 function simpleCap.squadron:genCapInterceptWp(targetId)

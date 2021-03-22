@@ -12,18 +12,17 @@ simpleEwr.ewrUnitList = {} --{"EWR-1", "EWR-2"}
 simpleEwr.knownTargets = {} --table of known targets
 simpleEwr.clockTiming = 6 --tiem between checks, lower interval higher workload
 simpleEwr.safeAlt = 0
+simpleEwr.timeInMemory = false
 simpleEwr.detectionZone = false --false until set
 
 simpleEwr.flagNumber = false --false until set
 simpleEwr.flagCounter = 0 -- do not change
 
---setup functions
+--[[
 
-function simpleEwr.start() --starts simpleEWR
-end
+    Setup functions
 
-function simpleEwr.stop() --maybe?
-end
+]]
 
 function simpleEwr.addEwrByName (unitName) --main function for adding units to the table
     if Unit.getByName(unitName) then --existing unit
@@ -55,6 +54,10 @@ function simpleEwr.setUpdateInterval (seconds) --sets the interval for the repea
     simpleEwr.clockTiming = seconds
 end
 
+function simpleEwr.setTimeInMemory (seconds)
+    simpleEwr.timeInMemory = seconds
+end
+
 function simpleEwr.setDetectionFlag (flagNumber) --sets the flag that should be used after a detection event
     simpleEwr.flagNumber = flagNumber
 end
@@ -72,7 +75,11 @@ function simpleEwr.setSafeAltitude (meters) --sets the safe altitude AGL that wi
     simple.debugOutput ("setSafeAltitude: set to " .. meters)
 end
 
---logic functions
+--[[
+
+    logic functions
+
+]]
 
 function simpleEwr.getKnownTargets() -- returns the table of known targets, might be useful for the dispatcher
     return simpleEwr.knownTargets
@@ -128,6 +135,18 @@ function simpleEwr.decider() --runs further functions if a target is inside of a
     simple.debugOutput("decider: \n" .. inZone .. " targets inside the detection zone. \n" .. notInZone .. ' targets outside of the detection zone.')
 end
 
+function simpleEwr.cleanUp() --removes old contacts that have not been updated in a while
+    if simpleCap.timeInMemory ~= false then
+        local _currentTime = timer.getTime()
+        for id, data in pairs (simpleEwr.knownTargets) do
+            if _currentTime - simpleEwr.timeInMemory >= data.detectionTime then
+                simpleEwr.knownTargets[id] = nil
+                simple.debugOutput("cleanUp: " .. id ..  "removed from knownTargets")
+            end
+        end
+    end
+end
+
 function simpleEwr.isVecInZone(vec3) --returns true if a vec3 is in the detection zone
     if simpleEwr.detectionZone ~= false then --zone exists / has been defined
         if mist.pointInPolygon(vec3, simpleEwr.detectionZone) then
@@ -150,7 +169,7 @@ end
 function simpleEwr.repeater ()
     simpleEwr.ewrDetectTargets()
     simpleEwr.decider()
-
+    simpleEwr.cleanUp()
     simple.debugOutput ("ewrRepeater: finished")
 end
 
@@ -170,12 +189,13 @@ function simpleEwr.eventHandler(event)
                 simple.debugOutput("eventHandler: knownTarget removed. ID: " .. event.initiator.id_)
             end
         end
+
     end
 end
 
 do  
     mist.addEventHandler(simpleEwr.eventHandler)
-    local repeater = mist.scheduleFunction (simpleEwr.repeater, {}, timer.getTime() + 2, simpleEwr.clockTiming )
+    local repeater = mist.scheduleFunction (simpleEwr.repeater, {}, timer.getTime() + 1, simpleEwr.clockTiming )
     
     simple.notify("simpleEwr finished loading", 15) --keep at the end of the script
 end

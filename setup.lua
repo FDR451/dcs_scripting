@@ -7,7 +7,8 @@ do
 
     simpleEwr.addEwrByPrefix("EWR")
     simpleEwr.setDetectionZone("poly")
-    simpleEwr.setSafeAltitude(100)
+    simpleEwr.setSafeAltitude(1000)
+    simpleEwr.setTimeInMemory (60)
 
     --simpleCap
 
