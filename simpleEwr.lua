@@ -156,6 +156,7 @@ end
 
 function simpleEwr.eventHandler(event)
     if event.id == 30 then --event dead 8, 30 unit lost
+
         for number, ewrUnit in pairs (simpleEwr.ewrUnitList) do --checks if the dead unit is an EWR --works!
             if event.initiator:getName()  == ewrUnit then
                 table.remove(simpleEwr.ewrUnitList, number)
@@ -163,7 +164,7 @@ function simpleEwr.eventHandler(event)
             end
         end
 
-        for k, v in pairs (simpleEwr.knownTargets) do -- checks if it is a known target --does not work!
+        for k, v in pairs (simpleEwr.knownTargets) do -- checks if it is a known target --works
             if k == event.initiator.id_ then
                 simpleEwr.knownTargets[event.initiator.id_] = nil
                 simple.debugOutput("eventHandler: knownTarget removed. ID: " .. event.initiator.id_)
@@ -176,17 +177,5 @@ do
     mist.addEventHandler(simpleEwr.eventHandler)
     local repeater = mist.scheduleFunction (simpleEwr.repeater, {}, timer.getTime() + 2, simpleEwr.clockTiming )
     
-    --[[
-
-    --TESTING
-    --simpleEwr.addEwrByPrefix("EWR")
-    --simpleEwr.setDetectionZone("poly")
-    --simpleEwr.setSafeAltitude(50)
-    --simpleEwr.setDetectionFlag(42)
-
-    --end Test
-
-    ]]
-
     simple.notify("simpleEwr finished loading", 15) --keep at the end of the script
 end

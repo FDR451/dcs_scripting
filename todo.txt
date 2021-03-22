@@ -1,0 +1,18 @@
+TODO:
+
+simpleEwr:
+    remove destroyed units
+    remove units that left the zone
+
+simpleCap:
+    remove destroyed units from ATO
+    refresh the interceptions points periodically
+
+    add a landing waypoint
+    after landing restore ressources
+
+    add support for CAP
+    add more intelligent dispatching
+
+    remove repeatertable and rerun a repeated function for each flight and squadron
+    

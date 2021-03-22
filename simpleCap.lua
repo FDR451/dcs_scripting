@@ -16,8 +16,9 @@ function simpleCap.setUpdateRate (seconds)
 end
 
 function simpleCap.buildTargets () --takes the output from simpleEwr and adds more data fields, but runs more rarely. This way it should have less performance impact
-	local _ewrTargets = simpleEwr.getKnownTargets()
-	for id, data in pairs (_ewrTargets) do
+	local _ewrTargets = simpleEwr.getKnownTargets() --imports the knownTargets from simpleEwr
+
+	for id, data in pairs (_ewrTargets) do --adds and updates the capTargets from simpleEwr targets, does not remove targets
 
 		local _hdg = math.atan2 (data.unitVelVec3.x, data.unitVelVec3.z)
 		local _spd = mist.vec.mag( data.unitVelVec3 )
@@ -39,16 +40,27 @@ function simpleCap.buildTargets () --takes the output from simpleEwr and adds mo
 
 		simpleCap.targets[id] = _args
 	end
+
+
+	--seems to work
+	for id, data in pairs (simpleCap.targets) do --removes targets that are no longer detected by simpleEwr
+		if _ewrTargets[id] then --simpleEwr has a target with the same ID as capTargets, therefore the target is still detected
+		else --no more id matching = ewr does not know the target anymore
+			simpleCap.targets[id] = nil
+			simple.dumpTable(simpleCap.targets) --debug
+			simple.debugOutput ("target removed from capTargets")
+		end
+	end
 end
 
-function simpleCap.genInterceptPoint(posVec2, heading, speed, minutes)
+function simpleCap.genInterceptPoint(posVec2, heading, speed, minutes) --generates an intercept point where the target will be in n minutes
 	local _distance = { x = speed * (minutes * 60), y = 0 } 
 	local _offset = mist.vec.rotateVec2 (_distance, heading)
 	local _return = { x = posVec2.x + _offset.x, y = posVec2.y + _offset.y }
 	return _return
 end
 
-function simpleCap.genAto()
+function simpleCap.genAto() --takes the simpleCap.targets table and creates it into the Air Tasking Order that will be used by the squadrons
 	for id, data in pairs (simpleCap.targets) do
 		if data.targetInZone == true then
 
@@ -72,10 +84,22 @@ function simpleCap.genAto()
 			simpleCap.ato[id] = nil
 		end
 	end
+
+	for id, data in pairs (simpleCap.ato) do --removes targets that are no longer detected by simpleEwr
+		if simpleCap.targets[id] then 
+		else --no more id matching target is not known anymore, ie dead. Should remove the ATO and free up the aircraft
+
+
+
+			--simpleCap.ato[id] = nil --temp
+			simple.debugOutput ("target removed from capTargets")
+		end
+	end
+
 	simple.debugOutput('genAto: finished')
 end
 
-function simpleCap.repeater()
+function simpleCap.repeater() --repeater table, I really need a better way to do it
 	simple.debugOutput ("capRepeater: started")
 
 	simpleCap.buildTargets ()
@@ -86,6 +110,12 @@ function simpleCap.repeater()
 	end
 	
 	simple.debugOutput ("capRepeater: finished")
+end
+
+function simpleCap.eventhandler(event) --todo: remove dead interceptors to enable their replacement
+	if event.id == 30 then --event dead 8, 30 unit lost
+
+	end
 end
 
 --[[
@@ -109,6 +139,7 @@ function simpleCap.squadron:new (args)
     self.__index = self
 
 	simple.debugOutput('New squadron created. Name:' .. args.name .. '; homebase: ' .. args.homebase .. '; tasking: ' .. args.task .. '; ressources: ' .. args.ressources .. '; template: ' .. args.template[1])
+
     return args
 end
 
@@ -216,23 +247,9 @@ function simpleCap.squadron:spawn(mission)
 end
 
 
-
 do
 	local repeater = mist.scheduleFunction (simpleCap.repeater, {}, timer.getTime() + simpleCap.updateFreq, simpleCap.updateFreq ) --starts the repeater
-
-
-	--[[
-	--testing stuff
-
-	s1 = simpleCap.squadron:new {name = 'Hummus', homebase = 3, task = 'gci', ressources = 2, template = {"Mig-1"} }
-	s1:checkIn()
-	s2 = simpleCap.squadron:new {name = 'Couscous', homebase = 4, task = 'gci', ressources = 3, template = {"Mig-1"} }
-	s2:checkIn()
-	simpleCap.setUpdateRate (12)
-
-	--end testing
-	
-	]]
+	mist.addEventHandler(simpleCap.eventhandler)
 
 	simple.notify("simpleCap finished loading", 15) --keep at the end of the file
 end

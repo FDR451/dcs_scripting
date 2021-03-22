@@ -32,7 +32,7 @@ end
 function simple.getAltitudeAgl (vec3) --returns the altitude AGL of a given vec3
     local _vec3GL = mist.utils.makeVec3GL(vec3)
     local output = vec3.y - _vec3GL.y
-    simple.debugOutput ("getAltitudeAgl: altitude is " .. output .. "m AGL.")
+    --simple.debugOutput ("getAltitudeAgl: altitude is " .. output .. "m AGL.")
     return output
 end
 
