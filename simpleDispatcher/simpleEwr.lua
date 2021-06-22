@@ -166,9 +166,14 @@ function simpleEwr.applyFlag () --increases the number of the
     simple.debugOutput("applyFlag: flag: " .. simpleEwr.flagNumber .. "; value: " .. trigger.misc.getUserFlag(simpleEwr.flagNumber))
 end
 
+function simpleEwr.cloaking() --iterate through all blue aircraft, check if they are in the zone, if not turn them invisible, if they are, turn them visible again
+
+end
+
 function simpleEwr.repeater ()
     simpleEwr.ewrDetectTargets()
     simpleEwr.decider()
+    simpleEwr.cloaking()
     simpleEwr.cleanUp()
     simple.debugOutput ("ewrRepeater: finished")
 end

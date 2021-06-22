@@ -5,15 +5,20 @@ simpleEwr:
     remove units that left the zone --not sure if I like the idea myself
     remove units that have not been detected for a while --done
 
+    make blue aircraft outside of the polygon invisible, for better cap integration
+        https://wiki.hoggitworld.com/view/DCS_func_setCommand
+        https://wiki.hoggitworld.com/view/DCS_command_setInvisible
+
 simpleCap:
     remove destroyed units from ATO
     remove units outside of the AO from ATO
     refresh the interceptions points periodically
 
     add a landing waypoint
-    after landing restore ressources
+        after landing restore ressources
 
     add support for CAP
+        add a way to include CAP waypoints. Either set or generated
     add more intelligent dispatching
 
     remove repeatertable and rerun a repeated function for each flight and squadron

@@ -203,7 +203,10 @@ function simpleCap.squadron:genSpawnCapWp()
 end
 
 function simpleCap.squadron:genLandingWp()
+	local _landingWp = {
 
+	}
+	return _landingWp
 end
 
 function simpleCap.squadron:genCapInterceptWp(targetId)

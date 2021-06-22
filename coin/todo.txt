@@ -1,0 +1,4 @@
+1. fix bug that leads to crashes if no empty zone is found for spawning --fixed
+2. give tasks to spawned red attackers
+3. clear dead attackers, set the zone back to inUse = false --done
+4. attack move and retreat functions --retread done
