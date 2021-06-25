@@ -21,6 +21,6 @@ hindsightTargets.targets = {
     },
     {
         groupName = "red_ied-1",
-        message = "an IED is being planed near a road in the west",
+        message = "an IED is being planted near a road in the west",
     },
 }

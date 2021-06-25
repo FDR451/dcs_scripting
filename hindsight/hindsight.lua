@@ -1,12 +1,20 @@
+--[[
+    Hindsight:
+    A patrol or XCAS style mission with random elements.
+]]
+
 hindsight = {}
-hindsight.actRange = 100000 --30km
+
+hindsight.activeTargets = {}
+
+hindsight.actRange = 3000 --30km
 hindsight.probability = 1
 hindsight.targetsMax = 10
 hindsight.messageDelay = 5
 hindsight.playerAircraft = {"Mi-24P_Tester", "L-39_tester"}
 
 
-function hindsight.start()
+function hindsight.startPatrolMode()
     local counter = 1
     for key, groupTable in pairs (hindsightTargets.targets) do
         counter = counter + 1
@@ -14,17 +22,19 @@ function hindsight.start()
     end
 end
 
+function hindsight.startXCASMode()
+end
+
 function hindsight.isPlayerInRange(groupTable) --check the distance between the target and all player aircraft, if one is within range activate, if no player exist or none are in range than reschedule the check
     local playerInRange = false
-    if hindsight.targetsMax > 0 then
-
+    if hindsight.targetsMax > 0 then --check if maximum amount of targets is reached
         local _targetPos = Group.getByName(groupTable.groupName):getUnit(1):getPoint()
 
-        for key, value in pairs (hindsight.playerAircraft) do
+        for key, playerGroupName in pairs (hindsight.playerAircraft) do --iterate through the playerAircraft table
 
-            if Group.getByName(value) then --check if the group exists
+            if Group.getByName(playerGroupName) then --check if the group exists
 
-                local _playerPos = Group.getByName(value):getUnit(1):getPoint()
+                local _playerPos = Group.getByName(playerGroupName):getUnit(1):getPoint()
                 local _distance = mist.utils.get2DDist(_targetPos, _playerPos)
                 simple.debugOutput(groupTable.groupName .. " distance: " .. _distance)
 
@@ -34,7 +44,7 @@ function hindsight.isPlayerInRange(groupTable) --check the distance between the 
                         simple.debugOutput(groupTable.groupName .. ": in range, activating")
                         hindsight.spawnTarget(groupTable)
                     else --in range but not spawning
-                        simple.debugOutput(groupTable.groupName .. ": in range, NOT activating")
+                        simple.debugOutput(groupTable.groupName .. ": in range, but NOT activating")
                     end
                 end
             end
@@ -63,7 +73,7 @@ end
 
 
 do
-    hindsight.start()
+    hindsight.startPatrolMode()
 
     simple.debugOutput("hindsight loaded")
 end
