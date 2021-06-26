@@ -1,5 +1,5 @@
 --[[
-    boom.lua
+    secondary_explosions.lua
     a simple script to enable secondary explosions on supply vehicles
 ]]
 
@@ -24,7 +24,7 @@ boom.table = { --table of units that produce secondary explosions
     ["Truck ZIL-135"] = boom.big,
     ["Caisse de munitions"] = boom.small,
     --STATICS
-    [".Ammunition depot"] = 1000
+    [".Ammunition depot"] = 1000 --not implemented
 }
 
 function boom.eventHandler(event)
@@ -45,7 +45,7 @@ function boom.eventHandler(event)
                             env.info(targetDesc.displayName .. " is exploding!", false)
 
                             local args = {["vec3"] = targetVec3, ["yield"] = yield }
-                            timer.scheduleFunction( boom.explode , args , timer.getTime() + math.random(2, 3) )
+                            timer.scheduleFunction( boom.explode , args , timer.getTime() + math.random(1, 3) )
                         end
                     end
                 end
@@ -59,7 +59,7 @@ function boom.eventHandler(event)
 end
 
 function boom.explode(args) --dcs
-    local yieldActual = math.ceil ( math.random(args.yield/2, args.yield) )
+    local yieldActual = math.ceil ( math.random(args.yield/3, args.yield) )
     trigger.action.explosion(args.vec3, yieldActual)
     trigger.action.effectSmokeBig(args.vec3 , 1 , 0.5 )
     env.info("yieldActual: " .. yieldActual, false)
@@ -76,10 +76,9 @@ end
 boomHandler = {}
 function boomHandler:onEvent(event)
     protectedCall(boom.eventHandler, event)
-    --boom.eventHandler(event)
 end
 
 do
     world.addEventHandler(boomHandler)
-    trigger.action.outText("boom.lua initiated", 5)
+    --trigger.action.outText("secondary_explosions.lua initiated", 5)
 end
