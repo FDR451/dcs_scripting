@@ -47,7 +47,6 @@ function simple.getAngle (vec3From, vec3To)
         _angleR = _angleR + 2 * math.pi
     end
     local _angleD = math.deg (_angleR)
-    simple.debugOutput("Angle(r): " .. _angleR .. "; angle(d): " .. _angleD)
     return _angleR
 end
 
