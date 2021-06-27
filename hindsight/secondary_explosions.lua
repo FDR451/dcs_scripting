@@ -84,7 +84,7 @@ end
 local function protectedCall(...) --from splash_damage
     local status, retval = pcall(...)
     if not status then
-        env.warning("secondary_explosions.lua script errors caught!" .. retval, true)
+        env.warning("secondary_explosions.lua script errors caught!" .. retval, false)
     end
 end
 

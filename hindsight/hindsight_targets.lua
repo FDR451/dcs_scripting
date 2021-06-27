@@ -1,6 +1,6 @@
-hindTargets = {}
+hindTables = {}
 
-hindTargets.targets = {
+hindTables.targets = {
     {
         groupName = "red_mortar-1",
         type = "arty",
@@ -60,4 +60,31 @@ hindTargets.targets = {
         type = "veh",
         message = "someone is shooting at the refugee camp",
     },
+}
+
+hindTables.checkPoints = {
+    ["roadCheckPointCenter-2"] = {
+        groupName = "roadCheckPointCenter-2",
+        displayName = "checkpoint CENTER",
+    },
+    {
+        groupName = "roadCheckPointCenter-1",
+        displayName = "checkpoint NORTH",
+    },
+    {
+        groupName = "roadCheckPointSouth-1",
+        displayName = "checkpoint SOUTH",
+    },
+    {
+        groupName = "rayakCheckPointNorth-1",
+        displayName = "Rayak checkpoint SOUTH",
+    },
+    {
+        groupName = "rayakCheckPointSouth-1",
+        displayName = "Rayak checkpoint SOUTH",
+    },
+}
+
+hindTables.blueConvoys = {
+    ["blue_convoy_south-1"] = { groupName = "blue_convoy_south-1", displayName = "convoy", },
 }
