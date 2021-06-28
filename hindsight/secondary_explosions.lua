@@ -12,6 +12,7 @@
 
 boom ={}
 --configuration
+boom.debug = false
 boom.threshold = 0.6
 boom.big = 1000
 boom.small = 750
@@ -35,6 +36,14 @@ boom.table = { --table of units that produce secondary explosions
     --STATICS (not implemented)
     [".Ammunition depot"] = 1000, 
 }
+
+local function debug(message) --generic debug function. Outputs on the screen if debug mode is enabled, always outputs to the log
+    local _outputString = "Debug: " .. tostring(message)
+    if boom.debug == true then
+        trigger.action.outText(tostring(_outputString), 5)
+    end
+    env.info(_outputString, false)
+end
 
 function boom.eventHandler(event)
     if event.id == 2 then --hit / S_EVENT_HIT
@@ -95,5 +104,5 @@ end
 
 do
     world.addEventHandler(boomHandler)
-    --trigger.action.outText("secondary_explosions.lua initiated", 5)
+    debug("secondary_explosions.lua initiated")
 end

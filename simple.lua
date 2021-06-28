@@ -1,6 +1,6 @@
 --[[
     simple.lua
-    a small scripting liberary of often used functions
+    a small personal scripting liberary
 ]]
 
 simple = {}
@@ -48,6 +48,29 @@ function simple.getAngle (vec3From, vec3To)
     end
     local _angleD = math.deg (_angleR)
     return _angleR
+end
+
+function simple.getCompassDirection (vec3From, vec3To) --returns a string of the cardinal direction
+    local _compassDir = nil
+    local _angleD = math.deg ( simple.getAngle(vec3From, vec3To) )
+    if _angleD >= 23 and _angleD <=68 then --NE
+        _compassDir = "north-east"
+    elseif _angleD >= 69 and _angleD <= 113 then --E
+        _compassDir = "east"
+    elseif _angleD >= 114 and _angleD <= 158 then --SE
+        _compassDir = "south-east"
+    elseif _angleD >= 159 and _angleD <= 203 then --S
+        _compassDir = "south"
+    elseif _angleD >= 204 and _angleD <= 248 then --SW
+        _compassDir = "south-west"
+    elseif _angleD >= 249 and _angleD <= 293 then --W
+        _compassDir = "west"
+    elseif _angleD >= 294 and _angleD <= 338 then -- NW
+        _compassDir = "north-west"
+    else --N
+        _compassDir = "north"
+    end
+    return _compassDir
 end
 
 local function dump(table) --https://stackoverflow.com/questions/9168058/how-to-dump-a-table-to-console

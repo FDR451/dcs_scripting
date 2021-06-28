@@ -4,6 +4,8 @@
 
     TODO:
     add radioMenu to decide the mode
+    make IEDs do something
+    
 ]]
 
 hind = {}
@@ -14,14 +16,14 @@ hind.activeTargets = {}
 hind.tgtSpawnAllowed = true
 hind.activeConvoy = nil
 --configuration variables
-hind.actRange = 7000 --30km
+hind.actDistMult = 1 --30km
 hind.probability = 1 --chance for a spawn event to trigger
 hind.targetsMax = 99 --max number of target groups to be spawned
 hind.spawnDelay = 90 --time between target spawns in seconds
 hind.messageDelay = 60 --time between the spawn event and the notification
 hind.updateFreq = 3 --to reduce the lua load
-hind.playerAircraft = {"Mi-24P_Tester", "L-39_Tester"}
-hind.blueConvoys = {"blue_convoy_south-1"}
+hind.messageDuration = 20
+hind.playerAircraft = {"Mi-24P_Tester", "L-39_Tester"} --move to tables
 
 local function debug(message) --generic debug function. Outputs on the screen if debug mode is enabled, always outputs to the log
     local _outputString = "Debug: " .. tostring(message)
@@ -31,12 +33,8 @@ local function debug(message) --generic debug function. Outputs on the screen if
     env.info(_outputString, false)
 end
 
-function hind.checkIfUnderAttack(groupName)
-
-end
-
 function hind.startPatrolMode() --spawns around the players
-    local counter = 0
+    local counter = 0 --to offset the check times
     for groupKey, groupTable in pairs (hindTables.targets) do
         counter = counter + 1
         mist.scheduleFunction(hind.isPlayerInRange, {groupTable}, timer.getTime() + counter * hind.updateFreq)
@@ -59,7 +57,7 @@ function hind.isPlayerInRange(groupTable) --check the distance between the targe
             if Group.getByName(playerGroupName) then --check if the group exists
                 local _playerPos = Group.getByName(playerGroupName):getUnit(1):getPoint()
                 local _distance = mist.utils.get2DDist(_targetPos, _playerPos)
-                if hind.tgtSpawnAllowed == true and _distance <= hind.actRange then -- in range
+                if hind.tgtSpawnAllowed == true and _distance <= groupTable.actDist * hind.actDistMult then -- in range
                     reschedulue = false
                     if math.random(0, 1) <= hind.probability then --in range but spawning
                         debug(playerGroupName .. " in range of " .. groupTable.groupName .. ". Activating group." )
@@ -85,7 +83,7 @@ function hind.isConvoyInRange(groupTable) --same as isPlayerInRange but checks r
         local _targetPos = Group.getByName(groupTable.groupName):getUnit(1):getPoint()
         local _convoyPos = Group.getByName(hind.activeConvoy):getUnit(1):getPoint()
         local _distance = mist.utils.get2DDist(_targetPos, _convoyPos)
-        if hind.tgtSpawnAllowed == true and _distance <= hind.actRange then
+        if hind.tgtSpawnAllowed == true and _distance <= groupTable.actDist * hind.actDistMult then
             reschedulue = false
             if math.random(0, 1) <= hind.probability then --in range but spawning
                 debug(hind.activeConvoy .. " in range of " .. groupTable.groupName .. ". Activating group." )
@@ -103,17 +101,6 @@ function hind.isConvoyInRange(groupTable) --same as isPlayerInRange but checks r
     end
 end
 
-function hind.spawnTarget(groupTable) --spawns a group and schedules the notification to the players about it's position
-    hind.targetsMax = hind.targetsMax - 1
-    hind.activeTargets[#hind.activeTargets+1] = groupTable
-    Group.getByName(groupTable.groupName):activate()
-    debug(groupTable.groupName .. " spawned")
-    if groupTable.message ~= nil then
-        mist.scheduleFunction (hind.informPlayers, {groupTable}, timer.getTime() + hind.messageDelay)
-    end
-    hind.setSpawnAllowed(false)
-end
-
 function hind.setSpawnAllowed(onOff) --stops further targets from spawning for a while
     if onOff == false then
         hind.tgtSpawnAllowed = false
@@ -126,9 +113,42 @@ function hind.setSpawnAllowed(onOff) --stops further targets from spawning for a
     end
 end
 
+function hind.spawnTarget(groupTable) --spawns a group and schedules the notification to the players about it's position
+    hind.targetsMax = hind.targetsMax - 1
+    hind.activeTargets[#hind.activeTargets+1] = groupTable
+    Group.getByName(groupTable.groupName):activate()
+    debug(groupTable.groupName .. " spawned")
+    if groupTable.message ~= nil then
+        mist.scheduleFunction (hind.informPlayers, {groupTable}, timer.getTime() + groupTable.messageDelay)
+    end
+    hind.setSpawnAllowed(false)
+end
+
 function hind.informPlayers(groupTable) --notifies the players about the position of a group
-    simple.notify(groupTable.message, 30)
+    simple.notify(groupTable.message, hind.messageDuration)
     trigger.action.outSound("Alert.ogg")
+end
+
+--[[
+    maybe turn the notification stuff into a separate file
+]]
+
+function hind.checkpointUnderAttack(checkPointGroupName, attackerGroupName)
+    local _cpVec3 = Group.getByName(checkPointGroupName):getUnit(1):getPoint()
+    local _attVec3 = Group.getByName(attackerGroupName):getUnit(1):getPoint()
+    local _compassDir = simple.getCompassDirection(_cpVec3, _attVec3)
+
+    trigger.action.outSound("Alert.ogg")
+    simple.notify(hindTables.blueCheckPoints[checkPointGroupName].displayName .. " is under attack from the " .. _compassDir , hind.messageDuration)
+end
+
+function hind.convoyUnderAttack(convoyGroupName, attackerGroupName)
+    local _conVec3 = Group.getByName(convoyGroupName):getUnit(1):getPoint()
+    local _attVec3 = Group.getByName(attackerGroupName):getUnit(1):getPoint()
+    local _compassDir = simple.getCompassDirection(_conVec3, _attVec3)
+
+    trigger.action.outSound("Alert.ogg")
+    simple.notify("The " .. hindTables.blueConvoys[convoyGroupName].displayName .. " is under attack from the " .. _compassDir , hind.messageDuration)
 end
 
 --[[
@@ -136,23 +156,22 @@ end
 ]]
 
 function hind.testConvoy() --purely for testing
-    Group.getByName(hind.blueConvoys[1]):activate()
-    hind.activeConvoy = hind.blueConvoys[1]
+    Group.getByName(hindTables.blueConvoys["blue_convoy_south-1"].groupName):activate()
+    hind.activeConvoy = hindTables.blueConvoys["blue_convoy_south-1"].groupName
     hind.startConvoyMode()
 end
 
 --eventHandler
 
-hit = {}
-
-function hit.hitEventHandler (event)
+function hind.hitEventHandler (event)
     if event.id == 2 then --hit / S_EVENT_HIT
         if event.target and event.target:getCategory() == 1 then --check if the target is a unit
             local _targetGroupName = event.target:getGroup():getName()
-            if hindTables.checkPoints[_targetGroupName] then --target is checkpoint
-                simple.notify(hindTables.checkPoints[_targetGroupName].displayName .. " is under attack!", 10)
+            local _attackerGroupName = event.initiator:getGroup():getName()
+            if hindTables.blueCheckPoints[_targetGroupName] then --target is checkpoint
+                hind.checkpointUnderAttack(_targetGroupName, _attackerGroupName)
             elseif hindTables.blueConvoys[_targetGroupName] then --target is convoy
-                simple.notify("The " .. hindTables.blueConvoys[_targetGroupName].displayName .. " is under attack!", 10)
+                hind.convoyUnderAttack (_targetGroupName, _attackerGroupName)
             end
         end
     end
@@ -168,15 +187,16 @@ end
 hitHandler = {}
 function hitHandler:onEvent(event)
     --hit.hitEventHandler (event)
-    protectedCall(hit.hitEventHandler, event)
+    protectedCall(hind.hitEventHandler, event)
 end
 
-
 do
-    --hind.startPatrolMode()
-    world.addEventHandler(hitHandler)
+    --testing
 
+    --hind.startPatrolMode()
     hind.testConvoy()
 
+    --don't change
+    world.addEventHandler(hitHandler)
     debug("hindsight.lua loaded")
 end

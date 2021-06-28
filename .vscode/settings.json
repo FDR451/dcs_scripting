@@ -1,10 +1,12 @@
 {
     "Lua.diagnostics.disable": [
         "lowercase-global",
+        "deprecated"
     ],
     "Lua.diagnostics.globals": [
         "pairs",
         "tostring",
         "trigger"
-    ]
+    ],
+    "lua.targetVersion": "5.2"
 }
