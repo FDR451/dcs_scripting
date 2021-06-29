@@ -16,10 +16,10 @@ hind.activeTargets = {}
 hind.tgtSpawnAllowed = true
 hind.activeConvoy = nil
 --configuration variables
-hind.actDistMult = 1 --30km
+hind.actDistMult = 1
 hind.probability = 1 --chance for a spawn event to trigger
 hind.targetsMax = 99 --max number of target groups to be spawned
-hind.spawnDelay = 90 --time between target spawns in seconds
+hind.spawnDelay = 90 --average time between target spawns in seconds (randomised)
 hind.messageDelay = 60 --time between the spawn event and the notification
 hind.updateFreq = 3 --to reduce the lua load
 hind.messageDuration = 20
@@ -149,6 +149,7 @@ function hind.convoyUnderAttack(convoyGroupName, attackerGroupName)
 
     trigger.action.outSound("Alert.ogg")
     simple.notify("The " .. hindTables.blueConvoys[convoyGroupName].displayName .. " is under attack from the " .. _compassDir , hind.messageDuration)
+    --simple.notify("The " .. hindTables.blueConvoys[convoyGroupName].displayName .. " is being attacked by " .. hindTables.targets[attackerGroupName].displayName[math.random(#hindTables.targets[attackerGroupName].displayName)] .. " from the " ..  _compassDir , hind.messageDuration) --doesn't work because the .targets table is not keyed with groupName
 end
 
 --[[

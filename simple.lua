@@ -46,7 +46,7 @@ function simple.getAngle (vec3From, vec3To)
     if _angleR < 0 then
         _angleR = _angleR + 2 * math.pi
     end
-    local _angleD = math.deg (_angleR)
+    --local _angleD = math.deg (_angleR)
     return _angleR
 end
 

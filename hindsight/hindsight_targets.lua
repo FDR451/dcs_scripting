@@ -1,5 +1,14 @@
 hindTables = {}
 
+hindTables.targetDisplayNames = { --we are taking fire from .. string 
+    ["mortar"] = {"group of mortars", "mortar squad", "mortar section",},
+    ["technical"] = {"armed trucks", "technicals"},
+    ["aaa"] = {},
+    ["ied"] = {},
+    ["manpad"] = {},
+    ["infantry"] = {},
+}
+
 hindTables.blueCheckPoints = {
     ["roadCheckPointCenter-2"] = {
         groupName = "roadCheckPointCenter-2",
@@ -30,6 +39,7 @@ hindTables.blueConvoys = {
 hindTables.targets = {
     {
         groupName = "red_mortar-1",
+        displayName = hindTables.targetDisplayNames.mortar,
         type = "arty",
         message = "A group of mortars is attacking TOWNNAME from the south east",
         messageSound = "",
@@ -38,14 +48,16 @@ hindTables.targets = {
     },
     {
         groupName = "red_mortar-2",
+        displayName = hindTables.targetDisplayNames.mortar,
         type = "arty",
         message = "a mortar group is bombarding TOWNNAME from the south east in the mountains!",
         messageSound = "",
         messageDelay = 20, --not used maybe?
         actDist = 7000, --not used. Maybe?
     },
-    {
+    { --testing
         groupName = "red_mortar-3",
+        displayName = hindTables.targetDisplayNames.mortar,
         type = "arty",
         message = "a group of mortars have been spotted 4km south of " .. hindTables.blueCheckPoints["roadCheckPointCenter-2"].displayName,
         messageSound = "",
@@ -54,6 +66,7 @@ hindTables.targets = {
     },
     {
         groupName = "red_mortar-4",
+        displayName = hindTables.targetDisplayNames.mortar,
         type = "arty",
         message = "a mortar is attacking the northern checkpoint!",
         messageSound = "",
@@ -62,6 +75,7 @@ hindTables.targets = {
     },
     {
         groupName = "red_aaa-1", --test
+        displayName = hindTables.targetDisplayNames.aaa,
         type = "aa",
         message = nil,
         messageSound = "",
@@ -70,6 +84,7 @@ hindTables.targets = {
     },
     {
         groupName = "red_manpad-1",
+        displayName = hindTables.targetDisplayNames.manpad,
         type = "aa",
         message = nil,
         messageSound = "",
@@ -78,31 +93,35 @@ hindTables.targets = {
     },
     {
         groupName = "red_ied-1",
+        displayName = hindTables.targetDisplayNames.ied,
         type = "bomb",
         message = "an IED is being planted near a road in the west",
         messageSound = "",
-        messageDelay = 120, --not used maybe?
+        messageDelay = 30, --not used maybe?
         actDist = 7000, --not used. Maybe?
     },
     {
         groupName = "red_technical-1",
+        displayName = hindTables.targetDisplayNames.technical,
         type = "veh",
         message = "the southern checkpoint is under attack!",
         messageSound = "",
-        messageDelay = 120, --not used maybe?
+        messageDelay = 30, --not used maybe?
         actDist = 6000, --not used. Maybe?
     },
     {
         groupName = "red_technical-2",
+        displayName = hindTables.targetDisplayNames.technical,
         type = "veh",
         message = "the southern checkpoint is under attack!",
         messageSound = "",
-        messageDelay = 120, --not used maybe?
+        messageDelay = 30, --not used maybe?
         actDist = 6000, --not used. Maybe?
     },
     {
         groupName = "red_infantry-1",
-        type = "veh",
+        displayName = hindTables.targetDisplayNames.infantry,
+        type = "inf",
         message = "someone is shooting at the refugee camp",
         messageSound = "",
         messageDelay = 30, --not used maybe?
@@ -110,7 +129,8 @@ hindTables.targets = {
     },
     {
         groupName = "red_infantry-2",
-        type = "veh",
+        displayName = hindTables.targetDisplayNames.infantry,
+        type = "inf",
         message = "someone is shooting at the refugee camp",
         messageSound = "",
         messageDelay = 30, --not used maybe?
