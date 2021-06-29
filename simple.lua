@@ -73,6 +73,14 @@ function simple.getCompassDirection (vec3From, vec3To) --returns a string of the
     return _compassDir
 end
 
+function simple.getTblLenght (table) --works for keyed tables where #table would not work
+    local _tblLenght = 0
+    for k, v in pairs (table) do
+        _tblLenght = _tblLenght + 1
+    end
+    return _tblLenght
+end
+
 local function dump(table) --https://stackoverflow.com/questions/9168058/how-to-dump-a-table-to-console
 	if type(table) == 'table' then
 	   local s = '{ \n'

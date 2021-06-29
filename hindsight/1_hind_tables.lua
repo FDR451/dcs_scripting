@@ -3,10 +3,10 @@ hindTables = {}
 hindTables.targetDisplayNames = { --we are taking fire from .. string 
     ["mortar"] = {"group of mortars", "mortar squad", "mortar section",},
     ["technical"] = {"armed trucks", "technicals"},
-    ["aaa"] = {},
-    ["ied"] = {},
-    ["manpad"] = {},
-    ["infantry"] = {},
+    ["aaa"] = {"aaa"},
+    ["ied"] = {"ied"},
+    ["manpad"] = {"manpad"},
+    ["infantry"] = {"infantry"},
 }
 
 hindTables.blueCheckPoints = {
@@ -37,7 +37,7 @@ hindTables.blueConvoys = {
 }
 
 hindTables.targets = {
-    {
+    ["red_mortar-1"] = {
         groupName = "red_mortar-1",
         displayName = hindTables.targetDisplayNames.mortar,
         type = "arty",
@@ -46,7 +46,7 @@ hindTables.targets = {
         messageDelay = 20, --not used maybe?
         actDist = 7000, --not used. Maybe?
     },
-    {
+    ["red_mortar-2"] = {
         groupName = "red_mortar-2",
         displayName = hindTables.targetDisplayNames.mortar,
         type = "arty",
@@ -55,7 +55,7 @@ hindTables.targets = {
         messageDelay = 20, --not used maybe?
         actDist = 7000, --not used. Maybe?
     },
-    { --testing
+    ["red_mortar-3"] = { --testing
         groupName = "red_mortar-3",
         displayName = hindTables.targetDisplayNames.mortar,
         type = "arty",
@@ -64,7 +64,7 @@ hindTables.targets = {
         messageDelay = 30, --not used maybe?
         actDist = 7000, --not used. Maybe?
     },
-    {
+    ["red_mortar-4"] = {
         groupName = "red_mortar-4",
         displayName = hindTables.targetDisplayNames.mortar,
         type = "arty",
@@ -73,7 +73,7 @@ hindTables.targets = {
         messageDelay = 20, --not used maybe?
         actDist = 7000, --not used. Maybe?
     },
-    {
+    ["red_aaa-1"] = {
         groupName = "red_aaa-1", --test
         displayName = hindTables.targetDisplayNames.aaa,
         type = "aa",
@@ -82,7 +82,7 @@ hindTables.targets = {
         messageDelay = 10, --not used maybe?
         actDist = 10000, --not used. Maybe?
     },
-    {
+    ["red_manpad-1"] = {
         groupName = "red_manpad-1",
         displayName = hindTables.targetDisplayNames.manpad,
         type = "aa",
@@ -91,7 +91,7 @@ hindTables.targets = {
         messageDelay = 10, --not used maybe?
         actDist = 10000, --not used. Maybe?
     },
-    {
+    ["red_ied-1"] = {
         groupName = "red_ied-1",
         displayName = hindTables.targetDisplayNames.ied,
         type = "bomb",
@@ -100,7 +100,7 @@ hindTables.targets = {
         messageDelay = 30, --not used maybe?
         actDist = 7000, --not used. Maybe?
     },
-    {
+    ["red_technical-1"] = {
         groupName = "red_technical-1",
         displayName = hindTables.targetDisplayNames.technical,
         type = "veh",
@@ -109,7 +109,7 @@ hindTables.targets = {
         messageDelay = 30, --not used maybe?
         actDist = 6000, --not used. Maybe?
     },
-    {
+    ["red_technical-2"] = {
         groupName = "red_technical-2",
         displayName = hindTables.targetDisplayNames.technical,
         type = "veh",
@@ -118,7 +118,7 @@ hindTables.targets = {
         messageDelay = 30, --not used maybe?
         actDist = 6000, --not used. Maybe?
     },
-    {
+    ["red_infantry-1"] = {
         groupName = "red_infantry-1",
         displayName = hindTables.targetDisplayNames.infantry,
         type = "inf",
@@ -127,7 +127,7 @@ hindTables.targets = {
         messageDelay = 30, --not used maybe?
         actDist = 5000, --not used. Maybe?
     },
-    {
+    ["red_infantry-2"] = {
         groupName = "red_infantry-2",
         displayName = hindTables.targetDisplayNames.infantry,
         type = "inf",
@@ -137,3 +137,13 @@ hindTables.targets = {
         actDist = 5000, --not used. Maybe?
     },
 }
+
+function getTblLenght (table) --works for keyed tables where #table would not work
+    local _tblLenght = 0
+    for k, v in pairs (table) do
+        _tblLenght = _tblLenght + 1
+    end
+    return _tblLenght
+end
+
+print ( getTblLenght(hindTables.targets["red_mortar-4"].displayName) )
