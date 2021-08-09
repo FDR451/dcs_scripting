@@ -5,6 +5,9 @@
     TODO:
     add radioMenu to decide the mode
     make IEDs do something
+
+    detection of convoy arriving at the camp and turn around a few minutes latter
+    change message strings
     
 ]]
 
@@ -16,11 +19,13 @@ hind.activeTargets = {}
 hind.tgtSpawnAllowed = true
 hind.activeConvoy = nil
 --configuration variables
-hind.actDistMult = 1
-hind.probability = 1 --chance for a spawn event to trigger
+hind.actDistMult = 1 --mult for the action distance in tables.lua
+hind.probability = 0.3 --chance for a spawn event to trigger
 hind.targetsMax = 99 --max number of target groups to be spawned
-hind.spawnDelay = 90 --average time between target spawns in seconds (randomised)
+hind.spawnDelay = 120 --average time between target spawns in seconds (randomised)
 hind.updateFreq = 3 --to reduce the lua load
+hind.notActivationDelay = 600 --delay if a unit did not spawn the first time to delay for a second check
+
 hind.playerAircraft = {"Mi-24P_Tester", "L-39_Tester"} --move to tables
 
 local function debug(message) --generic debug function. Outputs on the screen if debug mode is enabled, always outputs to the log
@@ -47,8 +52,9 @@ function hind.startConvoyMode() --spawns around the convoy
     end
 end
 
-function hind.isPlayerInRange(groupTable) --check the distance between the target and all player aircraft, if one is within range activate, if no player exist or none are in range than reschedule the check
+function hind.isPlayerInRange(groupTable) --update like the convoy function
     local reschedulue = true
+    local reschedulueOffset = 0
     if hind.targetsMax > 0 then --check if maximum amount of targets is reached
         local _targetPos = Group.getByName(groupTable.groupName):getUnit(1):getPoint()
         for k, playerGroupName in pairs (hind.playerAircraft) do --iterate through the playerAircraft table
@@ -56,12 +62,13 @@ function hind.isPlayerInRange(groupTable) --check the distance between the targe
                 local _playerPos = Group.getByName(playerGroupName):getUnit(1):getPoint()
                 local _distance = mist.utils.get2DDist(_targetPos, _playerPos)
                 if hind.tgtSpawnAllowed == true and _distance <= groupTable.actDist * hind.actDistMult then -- in range
-                    reschedulue = false
                     if math.random(0, 1) <= hind.probability then --in range but spawning
+                        reschedulue = false
                         debug(playerGroupName .. " in range of " .. groupTable.groupName .. ". Activating group." )
                         hind.spawnTarget(groupTable)
                     else --in range but not spawning
-                        debug(playerGroupName .. " in range of " .. groupTable.groupName .. ", but not activating." )
+                        reschedulueOffset = hind.notActivationDelay
+                        debug(playerGroupName .. " in range of " .. groupTable.groupName .. ", but not activating yet." )
                     end
                 end
             end
@@ -71,31 +78,34 @@ function hind.isPlayerInRange(groupTable) --check the distance between the targe
     end
     if reschedulue == true then --only reschedule if no player was in range
         debug(groupTable.groupName .. ": no player in range, or spawning not allowed")
-        mist.scheduleFunction(hind.isPlayerInRange, {groupTable}, timer.getTime() + simple.getTblLenght(hindTables.targets) * hind.updateFreq)
+        mist.scheduleFunction(hind.isPlayerInRange, {groupTable}, timer.getTime() + reschedulueOffset + simple.getTblLenght(hindTables.targets) * hind.updateFreq)
     end
 end
 
 function hind.isConvoyInRange(groupTable) --same as isPlayerInRange but checks range towards the convoy instead
     local reschedulue = true
+    local reschedulueOffset = 0
     if hind.targetsMax > 0 and hind.activeConvoy ~= nil then
         local _targetPos = Group.getByName(groupTable.groupName):getUnit(1):getPoint()
         local _convoyPos = Group.getByName(hind.activeConvoy):getUnit(1):getPoint()
         local _distance = mist.utils.get2DDist(_targetPos, _convoyPos)
         if hind.tgtSpawnAllowed == true and _distance <= groupTable.actDist * hind.actDistMult then
-            reschedulue = false
+            
             if math.random(0, 1) <= hind.probability then --in range but spawning
+                reschedulue = false
                 debug(hind.activeConvoy .. " in range of " .. groupTable.groupName .. ". Activating group." )
                 hind.spawnTarget(groupTable)
             else --in range but not spawning
-                debug(hind.activeConvoy .. " in range of " .. groupTable.groupName .. ", but not activating." )
+                reschedulueOffset = hind.notActivationDelay
+                debug(hind.activeConvoy .. " in range of " .. groupTable.groupName .. ", but not activating yet. Next check in " .. reschedulueOffset .. " seconds." )
             end
         end
     else --max targets reached
         reschedulue = false
     end
     if reschedulue == true then --only reschedule if no player was in range
-        debug(groupTable.groupName .. ": convoy NOT in range, or spawning not allowed")
-        mist.scheduleFunction(hind.isConvoyInRange, {groupTable}, timer.getTime() + simple.getTblLenght(hindTables.targets) * hind.updateFreq)
+        debug(groupTable.groupName .. ": NOT ACTIVATED. Nxt check in " .. reschedulueOffset .. " seconds")
+        mist.scheduleFunction(hind.isConvoyInRange, {groupTable}, timer.getTime() + reschedulueOffset + simple.getTblLenght(hindTables.targets) * hind.updateFreq)
     end
 end
 
@@ -120,16 +130,6 @@ function hind.spawnTarget(groupTable) --spawns a group and schedules the notific
         mist.scheduleFunction (hindNotify.informPlayers, {groupTable}, timer.getTime() + groupTable.messageDelay)
     end
     hind.setSpawnAllowed(false)
-end
-
---[[
-    pure testing
-]]
-
-function hind.testConvoy() --purely for testing
-    Group.getByName(hindTables.blueConvoys["blue_convoy_south-1"].groupName):activate()
-    hind.activeConvoy = hindTables.blueConvoys["blue_convoy_south-1"].groupName
-    hind.startConvoyMode()
 end
 
 --[[
@@ -164,12 +164,6 @@ function hitHandler:onEvent(event)
 end
 
 do
-    --testing
-
-    --hind.startPatrolMode()
-    hind.testConvoy()
-
-    --don't change
     world.addEventHandler(hitHandler)
     debug("hindsight.lua loaded")
 end

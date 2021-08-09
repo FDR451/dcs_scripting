@@ -6,7 +6,7 @@ hindTables.tgtDispNames = { --we are taking fire from .. string
     ["aaa"] = {"aaa"},
     ["ied"] = {"ied"},
     ["manpad"] = {"manpad"},
-    ["infantry"] = {"infantry"},
+    ["infantry"] = {"infantry", "insurgents"},
 }
 
 hindTables.blueCheckPoints = {
@@ -41,46 +41,55 @@ hindTables.targets = {
         groupName = "red_mortar-1",
         displayName = hindTables.tgtDispNames.mortar,
         type = "arty",
-        message = "A group of mortars is attacking TOWNNAME from the south east",
+        message = "A group of mortars have been spotted in the moutains 4km south of Rayak",
         messageSound = "",
-        messageDelay = 20, --not used maybe?
-        actDist = 7000, --not used. Maybe?
+        messageDelay = 40,
+        actDist = 7000,
     },
     ["red_mortar-2"] = {
         groupName = "red_mortar-2",
         displayName = hindTables.tgtDispNames.mortar,
         type = "arty",
-        message = "a mortar group is bombarding TOWNNAME from the south east in the mountains!",
+        message = "A group of mortars have been spotted north-east of Rayak",
         messageSound = "",
-        messageDelay = 20, --not used maybe?
-        actDist = 7000, --not used. Maybe?
+        messageDelay = 40,
+        actDist = 7000,
     },
     ["red_mortar-3"] = { --testing
         groupName = "red_mortar-3",
         displayName = hindTables.tgtDispNames.mortar,
         type = "arty",
-        message = "a group of mortars have been spotted 4km south of " .. hindTables.blueCheckPoints["roadCheckPointCenter-2"].displayName,
+        message = "A group of mortars have been spotted 4km south of " .. hindTables.blueCheckPoints["roadCheckPointCenter-2"].displayName,
         messageSound = "",
-        messageDelay = 30, --not used maybe?
-        actDist = 7000, --not used. Maybe?
+        messageDelay = 40,
+        actDist = 7000,
     },
     ["red_mortar-4"] = {
         groupName = "red_mortar-4",
         displayName = hindTables.tgtDispNames.mortar,
         type = "arty",
-        message = "a mortar is attacking the northern checkpoint!",
+        message = "A group of mortars have been spotted north west of " .. hindTables.blueCheckPoints["roadCheckPointCenter-1"].displayName,
         messageSound = "",
-        messageDelay = 20, --not used maybe?
-        actDist = 7000, --not used. Maybe?
+        messageDelay = 40,
+        actDist = 7000,
+    },
+    ["red_mortar-5"] = {
+        groupName = "red_mortar-5",
+        displayName = hindTables.tgtDispNames.mortar,
+        type = "arty",
+        message = "A group of mortars have been seen north west of Rayak",
+        messageSound = "",
+        messageDelay = 40,
+        actDist = 7000,
     },
     ["red_aaa-1"] = {
-        groupName = "red_aaa-1", --test
+        groupName = "red_aaa-1",
         displayName = hindTables.tgtDispNames.aaa,
         type = "aa",
         message = nil,
         messageSound = "",
-        messageDelay = 10, --not used maybe?
-        actDist = 10000, --not used. Maybe?
+        messageDelay = 10,
+        actDist = 10000,
     },
     ["red_manpad-1"] = {
         groupName = "red_manpad-1",
@@ -88,52 +97,79 @@ hindTables.targets = {
         type = "aa",
         message = nil,
         messageSound = "",
-        messageDelay = 10, --not used maybe?
-        actDist = 10000, --not used. Maybe?
+        messageDelay = 10,
+        actDist = 10000,
     },
     ["red_ied-1"] = {
         groupName = "red_ied-1",
         displayName = hindTables.tgtDispNames.ied,
         type = "bomb",
-        message = "an IED is being planted near a road in the west",
+        message = nil,
         messageSound = "",
-        messageDelay = 30, --not used maybe?
-        actDist = 7000, --not used. Maybe?
+        messageDelay = 10,
+        actDist = 7000,
     },
     ["red_technical-1"] = {
         groupName = "red_technical-1",
         displayName = hindTables.tgtDispNames.technical,
         type = "veh",
-        message = "the southern checkpoint is under attack!",
+        message = hindTables.tgtDispNames.technical[math.random (#hindTables.tgtDispNames.technical)] .. " have been spotted in Taalabaya",
         messageSound = "",
-        messageDelay = 30, --not used maybe?
-        actDist = 6000, --not used. Maybe?
+        messageDelay = 20,
+        actDist = 6000,
     },
     ["red_technical-2"] = {
         groupName = "red_technical-2",
         displayName = hindTables.tgtDispNames.technical,
         type = "veh",
-        message = "the southern checkpoint is under attack!",
+        message = hindTables.tgtDispNames.technical[math.random (#hindTables.tgtDispNames.technical)] .. " have been spotted north of Bar Elias",
         messageSound = "",
-        messageDelay = 30, --not used maybe?
-        actDist = 6000, --not used. Maybe?
+        messageDelay = 20,
+        actDist = 6000,
+    },
+    ["red_technical-3"] = {
+        groupName = "red_technical-3",
+        displayName = hindTables.tgtDispNames.technical,
+        type = "veh",
+        message = hindTables.tgtDispNames.technical[math.random (#hindTables.tgtDispNames.technical)] .. " have been spotted north-west of Rayak",
+        messageSound = "",
+        messageDelay = 20,
+        actDist = 10000,
     },
     ["red_infantry-1"] = {
         groupName = "red_infantry-1",
         displayName = hindTables.tgtDispNames.infantry,
         type = "inf",
-        message = "someone is shooting at the refugee camp",
+        message = hindTables.tgtDispNames.infantry[math.random (#hindTables.tgtDispNames.infantry)] .. " have been seen in a forest east of Rayak",
         messageSound = "",
-        messageDelay = 30, --not used maybe?
-        actDist = 5000, --not used. Maybe?
+        messageDelay = 30,
+        actDist = 5000,
     },
     ["red_infantry-2"] = {
         groupName = "red_infantry-2",
         displayName = hindTables.tgtDispNames.infantry,
         type = "inf",
-        message = "someone is shooting at the refugee camp",
+        message = hindTables.tgtDispNames.infantry[math.random (#hindTables.tgtDispNames.infantry)] .. " have been seen south-east of Zahle",
         messageSound = "",
-        messageDelay = 30, --not used maybe?
-        actDist = 5000, --not used. Maybe?
+        messageDelay = 30,
+        actDist = 5000,
+    },
+    ["red_infantry-3"] = {
+        groupName = "red_infantry-3",
+        displayName = hindTables.tgtDispNames.infantry,
+        type = "inf",
+        message = hindTables.tgtDispNames.infantry[math.random (#hindTables.tgtDispNames.infantry)] .. " have been seen south of Zahle",
+        messageSound = "",
+        messageDelay = 30,
+        actDist = 5000,
+    },
+    ["red_infantry-4"] = {
+        groupName = "red_infantry-4",
+        displayName = hindTables.tgtDispNames.infantry,
+        type = "inf",
+        message = hindTables.tgtDispNames.infantry[math.random (#hindTables.tgtDispNames.infantry)] .. " have been seen in an industrial area south-west of Rayak",
+        messageSound = "",
+        messageDelay = 30,
+        actDist = 5000,
     },
 }

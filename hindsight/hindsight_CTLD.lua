@@ -229,126 +229,8 @@ ctld.wpZones = {
 
 -- Use any of the predefined names or set your own ones
 ctld.transportPilotNames = {
-    "helicargo1",
-    "helicargo2",
-    "helicargo3",
-    "helicargo4",
-    "helicargo5",
-    "helicargo6",
-    "helicargo7",
-    "helicargo8",
-    "helicargo9",
-    "helicargo10",
-
-    "helicargo11",
-    "helicargo12",
-    "helicargo13",
-    "helicargo14",
-    "helicargo15",
-    "helicargo16",
-    "helicargo17",
-    "helicargo18",
-    "helicargo19",
-    "helicargo20",
-
-    "helicargo21",
-    "helicargo22",
-    "helicargo23",
-    "helicargo24",
-    "helicargo25",
-
-    "MEDEVAC #1",
-    "MEDEVAC #2",
-    "MEDEVAC #3",
-    "MEDEVAC #4",
-    "MEDEVAC #5",
-    "MEDEVAC #6",
-    "MEDEVAC #7",
-    "MEDEVAC #8",
-    "MEDEVAC #9",
-    "MEDEVAC #10",
-    "MEDEVAC #11",
-    "MEDEVAC #12",
-    "MEDEVAC #13",
-    "MEDEVAC #14",
-    "MEDEVAC #15",
-    "MEDEVAC #16",
-
-    "MEDEVAC RED #1",
-    "MEDEVAC RED #2",
-    "MEDEVAC RED #3",
-    "MEDEVAC RED #4",
-    "MEDEVAC RED #5",
-    "MEDEVAC RED #6",
-    "MEDEVAC RED #7",
-    "MEDEVAC RED #8",
-    "MEDEVAC RED #9",
-    "MEDEVAC RED #10",
-    "MEDEVAC RED #11",
-    "MEDEVAC RED #12",
-    "MEDEVAC RED #13",
-    "MEDEVAC RED #14",
-    "MEDEVAC RED #15",
-    "MEDEVAC RED #16",
-    "MEDEVAC RED #17",
-    "MEDEVAC RED #18",
-    "MEDEVAC RED #19",
-    "MEDEVAC RED #20",
-    "MEDEVAC RED #21",
-
-    "MEDEVAC BLUE #1",
-    "MEDEVAC BLUE #2",
-    "MEDEVAC BLUE #3",
-    "MEDEVAC BLUE #4",
-    "MEDEVAC BLUE #5",
-    "MEDEVAC BLUE #6",
-    "MEDEVAC BLUE #7",
-    "MEDEVAC BLUE #8",
-    "MEDEVAC BLUE #9",
-    "MEDEVAC BLUE #10",
-    "MEDEVAC BLUE #11",
-    "MEDEVAC BLUE #12",
-    "MEDEVAC BLUE #13",
-    "MEDEVAC BLUE #14",
-    "MEDEVAC BLUE #15",
-    "MEDEVAC BLUE #16",
-    "MEDEVAC BLUE #17",
-    "MEDEVAC BLUE #18",
-    "MEDEVAC BLUE #19",
-    "MEDEVAC BLUE #20",
-    "MEDEVAC BLUE #21",
-
-    -- *** AI transports names (different names only to ease identification in mission) ***
-
-    -- Use any of the predefined names or set your own ones
-
-    "transport1",
-    "transport2",
-    "transport3",
-    "transport4",
-    "transport5",
-    "transport6",
-    "transport7",
-    "transport8",
-    "transport9",
-    "transport10",
-
-    "transport11",
-    "transport12",
-    "transport13",
-    "transport14",
-    "transport15",
-    "transport16",
-    "transport17",
-    "transport18",
-    "transport19",
-    "transport20",
-
-    "transport21",
-    "transport22",
-    "transport23",
-    "transport24",
-    "transport25",
+    "Hip-1-1",
+    "Hind-1-1",
 }
 
 -- *************** Optional Extractable GROUPS *****************
@@ -356,33 +238,9 @@ ctld.transportPilotNames = {
 -- Use any of the predefined names or set your own ones
 
 ctld.extractableGroups = {
-    "extract1",
-    "extract2",
-    "extract3",
-    "extract4",
-    "extract5",
-    "extract6",
-    "extract7",
-    "extract8",
-    "extract9",
-    "extract10",
-
-    "extract11",
-    "extract12",
-    "extract13",
-    "extract14",
-    "extract15",
-    "extract16",
-    "extract17",
-    "extract18",
-    "extract19",
-    "extract20",
-
-    "extract21",
-    "extract22",
-    "extract23",
-    "extract24",
-    "extract25",
+    "1_blueInf",
+    "2_blueInf",
+    "3_blueInf",
 }
 
 -- ************** Logistics UNITS FOR CRATE SPAWNING ******************
@@ -391,16 +249,6 @@ ctld.extractableGroups = {
 -- When a logistic unit is destroyed, you will no longer be able to spawn crates
 
 ctld.logisticUnits = {
-    "logistic1",
-    "logistic2",
-    "logistic3",
-    "logistic4",
-    "logistic5",
-    "logistic6",
-    "logistic7",
-    "logistic8",
-    "logistic9",
-    "logistic10",
 }
 
 -- ************** UNITS ABLE TO TRANSPORT VEHICLES ******************
@@ -6426,6 +6274,8 @@ env.setErrorMessageBoxEnabled(false)
 -- initialize CTLD in 2 seconds, so other scripts have a chance to modify the configuration before initialization
 ctld.logInfo(string.format("Loading version %s in 2 seconds", ctld.Version))
 timer.scheduleFunction(ctld.initialize, nil, timer.getTime() + 2)
+
+trigger.action.outText("hindsight_CTLD LOADED", 15)
 
 --DEBUG FUNCTION
 --        for key, value in pairs(getmetatable(_spawnedCrate)) do

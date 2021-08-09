@@ -6,7 +6,8 @@
     "Lua.diagnostics.globals": [
         "pairs",
         "tostring",
-        "trigger"
+        "trigger",
+        "missionCommands"
     ],
     "lua.targetVersion": "5.2"
 }
