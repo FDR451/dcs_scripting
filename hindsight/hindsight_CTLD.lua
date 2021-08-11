@@ -54,7 +54,7 @@ ctld.enableSmokeDrop = true -- if false, helis and c-130 will not be able to dro
 
 ctld.maxExtractDistance = 125 -- max distance from vehicle to troops to allow a group extraction
 ctld.maximumDistanceLogistic = 200 -- max distance from vehicle to logistics to allow a loading or spawning operation
-ctld.maximumSearchDistance = 4000 -- max distance for troops to search for enemy
+ctld.maximumSearchDistance = 500 -- max distance for troops to search for enemy
 ctld.maximumMoveDistance = 2000 -- max distance for troops to move from drop point if no enemy is nearby
 
 ctld.minimumDeployDistance = 1000 -- minimum distance from a friendly pickup zone where you can deploy a crate
@@ -197,31 +197,13 @@ ctld.pickupZones = {
 
 -- dropOffZones = {"name","smoke colour",0,side 1 = Red or 2 = Blue or 0 = Both sides}
 ctld.dropOffZones = {
-    { "dropzone1", "green", 2 },
-    { "dropzone2", "blue", 2 },
-    { "dropzone3", "orange", 2 },
-    { "dropzone4", "none", 2 },
-    { "dropzone5", "none", 1 },
-    { "dropzone6", "none", 1 },
-    { "dropzone7", "none", 1 },
-    { "dropzone8", "none", 1 },
-    { "dropzone9", "none", 1 },
-    { "dropzone10", "none", 1 },
+    
 }
 
 
 --wpZones = { "Zone name", "smoke color",  "ACTIVE (yes/no)", "side (0 = Both sides / 1 = Red / 2 = Blue )", }
 ctld.wpZones = {
-    { "wpzone1", "green","yes", 2 },
-    { "wpzone2", "blue","yes", 2 },
-    { "wpzone3", "orange","yes", 2 },
-    { "wpzone4", "none","yes", 2 },
-    { "wpzone5", "none","yes", 2 },
-    { "wpzone6", "none","yes", 1 },
-    { "wpzone7", "none","yes", 1 },
-    { "wpzone8", "none","yes", 1 },
-    { "wpzone9", "none","yes", 1 },
-    { "wpzone10", "none","no", 0 }, -- Both sides as its set to 0
+    { "hospitalWpZone-1", "none", "yes" , 2 },
 }
 
 
@@ -229,8 +211,19 @@ ctld.wpZones = {
 
 -- Use any of the predefined names or set your own ones
 ctld.transportPilotNames = {
-    "Hip-1-1",
-    "Hind-1-1",
+    "Hip-1",
+    "Hip-2",
+
+    "Hind-1",
+    "Hind-2",
+    "Hind-3",
+    "Hind-4",
+
+    "Huey-1",
+    "Huey-2",
+
+    "Hokum-1",
+    "Hokum-2",
 }
 
 -- *************** Optional Extractable GROUPS *****************
@@ -300,6 +293,7 @@ ctld.unitActions = {
     -- ["SA342Mistral"] = {crates=true, troops=true},
     -- ["SA342L"] = {crates=false, troops=true},
     -- ["SA342M"] = {crates=false, troops=true},
+    ["KA-50"] = {crates=false, troops=false},
 
 }
 
@@ -6275,7 +6269,7 @@ env.setErrorMessageBoxEnabled(false)
 ctld.logInfo(string.format("Loading version %s in 2 seconds", ctld.Version))
 timer.scheduleFunction(ctld.initialize, nil, timer.getTime() + 2)
 
-trigger.action.outText("hindsight_CTLD LOADED", 15)
+--trigger.action.outText("hindsight_CTLD LOADED", 15)
 
 --DEBUG FUNCTION
 --        for key, value in pairs(getmetatable(_spawnedCrate)) do

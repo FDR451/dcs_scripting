@@ -50,6 +50,53 @@ function simple.getAngle (vec3From, vec3To)
     return _angleR
 end
 
+function simple.isGroupTableInZone(zoneName, groupTable)
+    local _counter = 0
+    for key, _groupName in pairs (groupTable) do
+        local _groupUnitsInZone = simple.isGroupInZone(zoneName, _groupName)
+        if _groupUnitsInZone >= 1 then
+            _counter = _counter + _groupUnitsInZone
+        end
+    end
+    return _counter
+end
+
+function simple.isGroupInZone(zoneName, groupName)
+    local _counter = 0
+    if Group.getByName(groupName) then
+        local _groupUnits = Group.getByName(groupName):getUnits()
+        for _index, unitData in pairs(_groupUnits) do
+            local _unitName = Unit.getName(unitData)
+            if simple.isUnitInZone(zoneName, _unitName) then
+                _counter = _counter + 1
+            end
+        end
+    end
+    return _counter
+end
+
+function simple.isUnitTableInZone(zoneName, unitTable)
+    local _counter = 0
+    for key, unitName in pairs (unitTable) do
+        if simple.isUnitInZone(zoneName, unitName) then
+            _counter = _counter + 1
+        end
+    end
+    return _counter
+end
+
+function simple.isUnitInZone(zoneName, unitName) --has issues with polygonal zones, need to investigate
+    if Unit.getByName(unitName) then --exists
+        local _zone = trigger.misc.getZone(zoneName)
+        local _zoneVec3 = mist.utils.zoneToVec3(_zone)
+        local _unitVec3 = Unit.getByName(unitName):getPoint()
+        if mist.utils.get2DDist (_zoneVec3, _unitVec3) <= _zone.radius then
+            return true
+        end
+    end
+    return false
+end
+
 function simple.getCompassDirection (vec3From, vec3To) --returns a string of the cardinal direction
     local _compassDir = nil
     local _angleD = math.deg ( simple.getAngle(vec3From, vec3To) )

@@ -1,6 +1,8 @@
 assert(loadfile("C:\\Users\\frueg\\Saved Games\\DCS.openbeta\\Missions\\dcs_scripting\\simple.lua"))()
 
-assert(loadfile("C:\\Users\\frueg\\Saved Games\\DCS.openbeta\\Missions\\dcs_scripting\\hindsight\\secondary_explosions.lua"))()
+assert(loadfile("C:\\Users\\frueg\\Saved Games\\DCS.openbeta\\Missions\\dcs_scripting\\markerFlags.lua"))()
+
+assert(loadfile("C:\\Users\\frueg\\Saved Games\\DCS.openbeta\\Missions\\dcs_scripting\\secondary_explosions.lua"))()
 
 assert(loadfile("C:\\Users\\frueg\\Saved Games\\DCS.openbeta\\Missions\\dcs_scripting\\hindsight\\1_hind_tables.lua"))()
 
