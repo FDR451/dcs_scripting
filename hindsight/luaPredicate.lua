@@ -28,3 +28,12 @@ if simple.isGroupTableInZone("hospitalWpZone-1", ctld.extractableGroups) >= 1 th
 else
     return false
 end
+
+ctld.createRadioBeaconAtZone("hospitalWpZone-1","blue", 14400,"refugee camp")
+
+
+
+pb.newBeacon("refugeeCampMorse.wav", mist.utils.zoneToVec3("hospitalWpZone-1"), "AM", true, 000300000, 100, "refCamp")
+
+--test
+trigger.action.radioTransmission("l10n/DEFAULT/Soviet_Anthem_Instrumental_1955.ogg" , mist.utils.zoneToVec3("hospitalWpZone-1") , 0 , true , 300000000 , 100 , "beaconTest")

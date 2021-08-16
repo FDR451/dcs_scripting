@@ -96,10 +96,10 @@ ctld.crateWaitTime = 30 -- time in seconds to wait before you can spawn another 
 
 ctld.forceCrateToBeMoved = true -- a crate must be picked up at least once and moved before it can be unpacked. Helps to reduce crate spam
 
-ctld.radioSound = "beacon.ogg" -- the name of the sound file to use for the FOB radio beacons. If this isnt added to the mission BEACONS WONT WORK!
+ctld.radioSound = "refugeeCampMorse.wav" -- the name of the sound file to use for the FOB radio beacons. If this isnt added to the mission BEACONS WONT WORK!
 ctld.radioSoundFC3 = "beaconsilent.ogg" -- name of the second silent radio file, used so FC3 aircraft dont hear ALL the beacon noises... :)
 
-ctld.deployedBeaconBattery = 30 -- the battery on deployed beacons will last for this number minutes before needing to be re-deployed
+ctld.deployedBeaconBattery = 60 -- the battery on deployed beacons will last for this number minutes before needing to be re-deployed
 
 ctld.enabledRadioBeaconDrop = false -- if its set to false then beacons cannot be dropped by units
 

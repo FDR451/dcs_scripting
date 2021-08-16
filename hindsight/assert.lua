@@ -1,10 +1,13 @@
+--simple
 assert(loadfile("C:\\Users\\frueg\\Saved Games\\DCS.openbeta\\Missions\\dcs_scripting\\simple.lua"))()
-
+--markerFlags
 assert(loadfile("C:\\Users\\frueg\\Saved Games\\DCS.openbeta\\Missions\\dcs_scripting\\markerFlags.lua"))()
-
+--secondary explosions
 assert(loadfile("C:\\Users\\frueg\\Saved Games\\DCS.openbeta\\Missions\\dcs_scripting\\secondary_explosions.lua"))()
-
+--proximity_activator
 assert(loadfile("C:\\Users\\frueg\\Saved Games\\DCS.openbeta\\Missions\\dcs_scripting\\proximity_Activator.lua"))()
+--persistent_beacons
+assert(loadfile("C:\\Users\\frueg\\Saved Games\\DCS.openbeta\\Missions\\dcs_scripting\\persistent_beacons.lua"))()
 
 --old:
 

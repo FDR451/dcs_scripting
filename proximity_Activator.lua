@@ -1,14 +1,25 @@
+--[[
+    proximity_Activator.lua
+    requierments: MIST, simple.lua
+    by: SuumCuique
+
+    a script to random trigger ambushes if a unit gets to close.
+]]
+
+--don't change
 pa = {}
-pa.debug = false
 pa.actAllowed = true
-pa.updateFreq = 1
-pa.actMax = 4 --maximum activations
+--performance and defaults
+pa.debug = false --debuging
+pa.updateFreq = 1 --performance
 pa.actChance = 0.3 --30% chance of activation
 pa.actDist = 1000
+--balancing
+pa.actMax = 5 --maximum activations
 pa.actSpawnDelay = 120 --time between spawn events
-pa.notActivationDelay = 60 --time between checks if a group was in range but did not activate
+pa.notActivationDelay = 90 --time between checks if a group was in range but did not activate
 
-pa.bluePlayerGroupName = ctld.transportPilotNames --groupName
+pa.blueplayerUnitName = ctld.transportPilotNames --unitnames
 
 pa.redTargets = { --table of units that can be activated by proximity
     { groupName = "0_redInf-1",  },
@@ -20,9 +31,13 @@ pa.redTargets = { --table of units that can be activated by proximity
     { groupName = "0_redInf-7",  },
     { groupName = "0_redInf-8",  },
     { groupName = "0_redInf-9",  },
-    { groupName = "0_redInf-10", actDist = 2000, actChance = 0.5 },
-    { groupName = "0_redInf-11", actDist = 2000, actChance = 0.5 },
-    { groupName = "0_redInf-12", actDist = 2000, actChance = 0.5 },
+    { groupName = "0_redInf-10",  },
+    { groupName = "0_redVeh-1", actDist = 2000, actChance = 0.5  },
+    { groupName = "0_redVeh-2", actDist = 2000, actChance = 0.5 },
+    { groupName = "0_redVeh-3", actDist = 2000, actChance = 0.5 },
+    { groupName = "0_redVeh-4", actDist = 2000, actChance = 0.5 },
+    { groupName = "0_redVeh-5", actDist = 2000, actChance = 0.5 },
+    { groupName = "0_redVeh-6", actDist = 2000, actChance = 0.5 },
 }
 
 
@@ -58,20 +73,22 @@ function pa.isPlayerInRange(groupData)
     local reschedulueOffset = 0
     if pa.actMax > 0 then --check if maximum amount of targets is reached
         local _targetPos = Group.getByName(groupData.groupName):getUnit(1):getPoint()
-        for _key, playerGroupName in pairs (pa.bluePlayerGroupName) do --iterate through the playerAircraft table
-            if Group.getByName(playerGroupName) then --check if the group exists
-                local _playerPos = Group.getByName(playerGroupName):getUnit(1):getPoint()
+        for _key, playerUnitName in pairs (pa.blueplayerUnitName) do --iterate through the playerAircraft table
+            if Group.getByName(playerUnitName) then --check if the group exists
+                local _playerPos = Unit.getByName(playerUnitName):getPoint()
                 local _distance = mist.utils.get2DDist(_targetPos, _playerPos)
+
                 if pa.actAllowed == true and _distance <= groupData.actDist then -- in range
                     if math.random(0, 1) <= pa.actChance then --in range and spawning
                         reschedulue = false
-                        debug(playerGroupName .. " in range of " .. groupData.groupName .. ". Activating group." )
-                        pa.spawnTarget(groupData.groupName)
+                        debug(playerUnitName .. " in range of " .. groupData.groupName .. ". Activating group." )
+                        pa.spawn(groupData.groupName)
                     else --in range but not spawning
-                        reschedulueOffset = pa.notActivationDelay
-                        debug(playerGroupName .. " in range of " .. groupData.groupName .. ", but not activating yet." )
+                        reschedulueOffset = pa.notActivationDelay --delay the check if not activated
+                        debug(playerUnitName .. " in range of " .. groupData.groupName .. ", but not activating yet." )
                     end
                 end
+
             end
         end
     else -- max targets reached
@@ -84,18 +101,18 @@ function pa.isPlayerInRange(groupData)
 end
 
 function pa.setSpawnAllowed(onOff) --stops further targets from spawning for a while
-    if onOff == false then
+    if onOff == false then --spawning prohibited
         pa.actAllowed = false
         local actualSpawnDelay = math.ceil ( math.random (pa.actSpawnDelay/2 , pa.actSpawnDelay*1.5) )
         mist.scheduleFunction (pa.setSpawnAllowed, {true}, timer.getTime() + actualSpawnDelay )
         debug("tgtSpawnAllowed set to false. actualSpawnDelay = " ..actualSpawnDelay)
-    elseif onOff == true then
+    elseif onOff == true then --spawning alowed
         pa.tgtSpawnAllowed = true
         debug("tgtSpawnAllowed set to true")
     end
 end
 
-function pa.spawnTarget(groupName) --spawns a group and schedules the notification to the players about it's position
+function pa.spawn(groupName) --spawns a group and schedules the notification to the players about it's position
     pa.actMax = pa.actMax - 1
     Group.getByName(groupName):activate()
     debug(groupName .. " spawned")
