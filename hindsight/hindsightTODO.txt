@@ -1,9 +1,0 @@
-Hindsight TO DO:
-
-01:
-move Beirut-FARP to a better position
-add another blue FARP to Bequa
-
-write briefing
-create kneeboards
-create maps

@@ -1,0 +1,6 @@
+https://morsecode.world/international/translator.html
+
+CW radio tone   
+freq 490
+volume 70
+character speed 15

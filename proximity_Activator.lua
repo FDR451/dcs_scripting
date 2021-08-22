@@ -32,6 +32,7 @@ pa.redTargets = { --table of units that can be activated by proximity
     { groupName = "0_redInf-8",  },
     { groupName = "0_redInf-9",  },
     { groupName = "0_redInf-10",  },
+    { groupName = "0_redInf-11",  },
     { groupName = "0_redVeh-1", actDist = 2000, actChance = 0.5  },
     { groupName = "0_redVeh-2", actDist = 2000, actChance = 0.5 },
     { groupName = "0_redVeh-3", actDist = 2000, actChance = 0.5 },
@@ -68,7 +69,7 @@ function pa.start()
     end
 end
 
-function pa.isPlayerInRange(groupData)
+function pa.isPlayerInRange(groupData) --commented out debug to avoid spamming the log
     local reschedulue = true
     local reschedulueOffset = 0
     if pa.actMax > 0 then --check if maximum amount of targets is reached
@@ -81,11 +82,11 @@ function pa.isPlayerInRange(groupData)
                 if pa.actAllowed == true and _distance <= groupData.actDist then -- in range
                     if math.random(0, 1) <= pa.actChance then --in range and spawning
                         reschedulue = false
-                        debug(playerUnitName .. " in range of " .. groupData.groupName .. ". Activating group." )
+                        --debug(playerUnitName .. " in range of " .. groupData.groupName .. ". Activating group." )
                         pa.spawn(groupData.groupName)
                     else --in range but not spawning
                         reschedulueOffset = pa.notActivationDelay --delay the check if not activated
-                        debug(playerUnitName .. " in range of " .. groupData.groupName .. ", but not activating yet." )
+                        --debug(playerUnitName .. " in range of " .. groupData.groupName .. ", but not activating yet." )
                     end
                 end
 
@@ -95,7 +96,7 @@ function pa.isPlayerInRange(groupData)
         reschedulue = false
     end
     if reschedulue == true then --only reschedule if no player was in range
-        debug(groupData.groupName .. ": no player in range, or spawning not allowed")
+        --debug(groupData.groupName .. ": no player in range, or spawning not allowed")
         mist.scheduleFunction(pa.isPlayerInRange, {groupData}, timer.getTime() + reschedulueOffset + simple.getTblLenght(pa.redTargets) * pa.updateFreq)
     end
 end

@@ -1,5 +1,6 @@
 --[[
     Name:           secondary_explosions.lua
+    Version:        1.1
     Author:         SuumCuique
     Dependencies:   none
     Usage:          "do script file" in the mission editor. No configuration necessary
@@ -11,6 +12,7 @@
 ]]
 
 boom ={}
+boom.version = 1.1
 --configuration
 boom.debug = false
 boom.threshold = 0.6
@@ -33,8 +35,13 @@ boom.table = { --table of units that produce secondary explosions
     ["Truck Ural-4320-31 Arm'd"] = boom.big,
     ["Truck ZIL-135"] = boom.big,
     ["Caisse de munitions"] = boom.small,
+    ["VAB MEDICAL"] = boom.small,
     --STATICS (not implemented)
-    [".Ammunition depot"] = 1000, 
+    [".Ammunition depot"] = 1000,
+}
+
+boom.excludedGroups = { --table of excluded groups
+    "UN_convoy",
 }
 
 local function debug(message) --generic debug function. Outputs on the screen if debug mode is enabled, always outputs to the log
@@ -45,38 +52,17 @@ local function debug(message) --generic debug function. Outputs on the screen if
     env.info(_outputString, false)
 end
 
-function boom.eventHandler(event)
-    if event.id == 2 then --hit / S_EVENT_HIT
-        if event.target then
-            local target = event.target
-            local category = target:getCategory()
-            if category == 1 then --units
-
-                local targetDesc = target:getDesc()
-                if targetDesc.category == 2 then --groundUnit
-                    if boom.table[targetDesc.displayName] then
-                        local targetLifeCurrent = target:getLife()
-                        local targetLifeInitial = target:getLife0()
-                        if targetLifeCurrent / targetLifeInitial <= boom.threshold then
-                            local targetVec3 = target:getPoint()
-                            local yield = boom.table[targetDesc.displayName]
-                            env.info(targetDesc.displayName .. " is exploding!", false)
-
-                            local args = {["vec3"] = targetVec3, ["yield"] = yield }
-                            timer.scheduleFunction( boom.explode , args , timer.getTime() + math.random(1, 3) )
-                        end
-                    end
-                end
-
-            elseif category == 3 then --structure
-                --local targetDesc = target:getDesc()
-                --trigger.action.outText("structure", 10) 
-            end
+local function isValidGroup(unitName)
+    local _groupName = Unit.getByName(unitName):getGroup():getName()
+    for key, excludedGroupName in pairs (boom.excludedGroups) do
+        if excludedGroupName == _groupName then --excluded groups
+            return false  
         end
     end
+    return true
 end
 
-function boom.explode(args) --dcs
+local function explode(args) --dcs --changed to local, untested
     local yieldActual = math.ceil ( math.random(args.yield/3, args.yield) )
     trigger.action.explosion(args.vec3, yieldActual)
     if yieldActual >= 750 then
@@ -88,6 +74,42 @@ function boom.explode(args) --dcs
     end
     env.info("yieldActual: " .. yieldActual, false)
     return nil
+end
+
+function boom.eventHandler(event)
+    if event.id == 2 then --hit / S_EVENT_HIT
+        if event.target then
+            local target = event.target
+            local category = target:getCategory()
+            if category == 1 then --units
+
+                local targetDesc = target:getDesc()
+                if targetDesc.category == 2 then --groundUnit
+
+                    if isValidGroup(target:getName()) == true then --NOT an excluded group, therefore a valid group
+
+                        if boom.table[targetDesc.displayName] then
+                            local targetLifeCurrent = target:getLife()
+                            local targetLifeInitial = target:getLife0()
+                            if targetLifeCurrent / targetLifeInitial <= boom.threshold then
+                                local targetVec3 = target:getPoint()
+                                local yield = boom.table[targetDesc.displayName]
+                                env.info(targetDesc.displayName .. " is exploding!", false)
+
+                                local args = {["vec3"] = targetVec3, ["yield"] = yield }
+                                timer.scheduleFunction( explode , args , timer.getTime() + math.random(1, 3) )
+                            end
+                        end
+
+                    end
+                end
+
+            elseif category == 3 then --structure
+                --local targetDesc = target:getDesc()
+                --trigger.action.outText("structure", 10) 
+            end
+        end
+    end
 end
 
 local function protectedCall(...) --from splash_damage
@@ -104,5 +126,5 @@ end
 
 do
     world.addEventHandler(boomHandler)
-    debug("secondary_explosions.lua initiated")
+    debug("secondary_explosions.lua version: " .. boom.version .. " initiated")
 end
