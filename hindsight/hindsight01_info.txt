@@ -4,14 +4,14 @@ Hindsight TO DO:
 move Beirut-FARP to a better position
 add another blue FARP to Bequa
 
-write briefing
+write briefing:
 create kneeboards
 create maps
 
 --briefing/kneeboard information
 
 Overview:
-A UN helicopter has crashed somewhere north of Rayak in Beqaa Valley. Find and rescue the crew. We suspect that the Beqaa Liberation Army (BLA) might be responsible.
+A UN helicopter has crashed somewhere north of Rayak in Beqaa Valley. Find and rescue the crew. We suspect that the Beqaa Liberation Army might be responsible.
 
 Tasking:
 Follow the Beirut - Damascus International Highway (Road 30) eastwards towards Bequaa Valley checkpoint (WP1) and continue north from there. Locate the crashed helicopter. It should transmit a homing signal on 121.5MHz and 243MHz. Pick up the crew and bring them to the field hospital in FARP Alpha (WP2). Adjescent to FARP Alpha is a UN refugee camp. Rearming and refueling is possible in FARP Alpha (Rayak) 

@@ -8,6 +8,10 @@ assert(loadfile("C:\\Users\\frueg\\Saved Games\\DCS.openbeta\\Missions\\dcs_scri
 assert(loadfile("C:\\Users\\frueg\\Saved Games\\DCS.openbeta\\Missions\\dcs_scripting\\proximity_Activator.lua"))()
 --persistent_beacons
 assert(loadfile("C:\\Users\\frueg\\Saved Games\\DCS.openbeta\\Missions\\dcs_scripting\\persistent_beacons.lua"))()
+--rangeTrainer
+assert(loadfile("C:\\Users\\frueg\\Saved Games\\DCS.openbeta\\Missions\\dcs_scripting\\rangeTrainer.lua"))()
+--detectorTest
+assert(loadfile("C:\\Users\\frueg\\Saved Games\\DCS.openbeta\\Missions\\dcs_scripting\\detectorTest.lua"))()
 
 --old:
 

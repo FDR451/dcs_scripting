@@ -15,7 +15,7 @@ boom ={}
 boom.version = 1.1
 --configuration
 boom.debug = false
-boom.threshold = 0.6
+boom.threshold = 0.5
 boom.big = 1000
 boom.small = 750
 
@@ -62,7 +62,7 @@ local function isValidGroup(unitName)
     return true
 end
 
-local function explode(args) --dcs --changed to local, untested
+local function explode(args) --dcs
     local yieldActual = math.ceil ( math.random(args.yield/3, args.yield) )
     trigger.action.explosion(args.vec3, yieldActual)
     if yieldActual >= 750 then
@@ -84,6 +84,7 @@ function boom.eventHandler(event)
             if category == 1 then --units
 
                 local targetDesc = target:getDesc()
+
                 if targetDesc.category == 2 then --groundUnit
 
                     if isValidGroup(target:getName()) == true then --NOT an excluded group, therefore a valid group
