@@ -166,9 +166,10 @@ local function notifyResults()
 
     if weaponCount >= 1 then --build outString
         outString = "RESULTS:"
-        outString = outString .. "\n____fired " .. weaponCount .. "x " .. weaponName .. " at " .. tgtName
-        outString = outString .. "\n____launch distance: " .. launchSeparation .. "; impact separation: " .. impactSeparation
+        outString = outString .. "\n____fired " .. weaponCount .. " * " .. weaponName .. " at " .. tgtName
         outString = outString .. "\n____cloest impact: " .. closeDist .. "; furthest impact: " .. farDist
+        outString = outString .. "\n____launch distance: " .. launchSeparation .. "; impact separation: " .. impactSeparation
+        
     end
 
     if outString then
