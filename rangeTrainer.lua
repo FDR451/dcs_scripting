@@ -4,6 +4,10 @@ rt.updateRate = 0.05
 rt.debug = true
 rt.trackedWeapons = {}
 
+local resultsTable = {}
+local resultsInterval = 5
+
+
 rt.shooter = {"shooter-1"}
 rt.targets = {"target-1", "target-2"}
 
@@ -15,6 +19,12 @@ local function debug(message) --generic debug function. Outputs on the screen if
     end
     env.info(_outputString, false)
 end
+
+local function notify(message, duration) --used this so often now... 
+    trigger.action.outText(tostring(message), duration)
+    env.info("rt_Notify: " .. tostring(message), false)
+end
+
 
 --from weapons_damage
 
@@ -109,17 +119,64 @@ local function track_wpns()
                 end
                 
                 --trigger.action.smoke(impactPoint, 0)
-                local _targetName, _distanceFromTgt = getClosestTargetAndDistance(impactPoint)
-                local _launchDist = math.floor ( 0.5 + getDistance3D ( Unit.getByName(_targetName):getPoint(), wpnData.shooterVec3Init ) )
-                local _finalDist  = math.floor ( 0.5 + getDistance3D ( Unit.getByName(_targetName):getPoint(), wpnData.shooter:getPoint() ) )
-
-                trigger.action.outText(wpnData.name .. " impacted " .. _distanceFromTgt .. "m from " .. _targetName ..".\nFired from " .. _launchDist .. "m. Separation at impact " .. _finalDist .. "m!", 10)
-
+                wpnData.ip = impactPoint
+                resultsTable[wpn_id_] = wpnData
                 rt.trackedWeapons[wpn_id_] = nil -- remove from tracked weapons first.         
             end
         end
     --env.info("Weapon Track End")
     timer.scheduleFunction( track_wpns , {} , timer.getTime() + rt.updateRate )
+end
+
+local function notifyResults()
+    local outString = nil
+    local weaponName = ""
+    local weaponCount = 0
+    local closeDist = 9999999
+    local farDist = 0
+    local tgtName = ""
+    local impactSeparation = 9999999
+    local launchSeparation = 9999999
+
+    for wpnId, wpnData in pairs (resultsTable) do --get closest hit, furthest miss, launch and impact separation from the target
+        weaponCount = weaponCount + 1
+        local _targetName, _distanceFromTgt = getClosestTargetAndDistance(wpnData.ip)
+        local _launchDist = math.floor ( 0.5 + getDistance3D ( Unit.getByName(_targetName):getPoint(), wpnData.shooterVec3Init ) )
+        local _finalDist  = math.floor ( 0.5 + getDistance3D ( Unit.getByName(_targetName):getPoint(), wpnData.shooter:getPoint() ) )
+
+        if _distanceFromTgt >= farDist then
+            farDist = _distanceFromTgt
+        end
+
+        if _distanceFromTgt <= closeDist then --smaller is better
+            closeDist = _distanceFromTgt
+        end
+
+        if _launchDist <= launchSeparation then --larger is better (more standoff)
+            launchSeparation = _launchDist
+        end
+
+        if _finalDist <= impactSeparation then --larger is better (more standoff)
+            impactSeparation = _finalDist
+        end
+        
+        tgtName = _targetName --really... 
+        weaponName = wpnData.name
+    end
+
+    if weaponCount >= 1 then --build outString
+        outString = "RESULTS:"
+        outString = outString .. "\n____fired " .. weaponCount .. "x " .. weaponName .. " at " .. tgtName
+        outString = outString .. "\n____launch distance: " .. launchSeparation .. "; impact separation: " .. impactSeparation
+        outString = outString .. "\n____cloest impact: " .. closeDist .. "; furthest impact: " .. farDist
+    end
+
+    if outString then
+        notify(outString, 10)
+    end
+    
+    resultsTable = {}
+    return timer.getTime() + resultsInterval
 end
 
 function rt.eventHandler (event)
@@ -165,6 +222,7 @@ end
 
 do
     timer.scheduleFunction( track_wpns , {} , timer.getTime() + rt.updateRate )
+    timer.scheduleFunction( notifyResults , {} , timer.getTime() + resultsInterval )
     world.addEventHandler(rangeHandler)
     debug("rangeTrainer.lua version: " .. rt.version .. " initiated")
 end
