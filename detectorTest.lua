@@ -18,6 +18,11 @@ local function debug(message) --generic debug function. Outputs on the screen if
     env.info(_outputString, false)
 end
 
+local function notify(message, duration) --used this so often now... 
+    trigger.action.outText(tostring(message), duration)
+    env.info("dt_Notify: " .. tostring(message), false)
+end
+
 local function getDistance3D(point1, point2)
     local x1 = point1.x
     local y1 = point1.y
@@ -57,13 +62,24 @@ local function checkDetectedTargets()
                 for tgtIndex, tgtData in pairs (detecTgts) do
     
                     if tgtData.object then
+
                         if targetTable[tgtData.object.id_] == nil then
                             targetTable[tgtData.object.id_] = {}
+                            targetTable[tgtData.object.id_].rangeKnown = false
+                            targetTable[tgtData.object.id_].typeKnown = false
+
                         end
                         targetTable[tgtData.object.id_].tgtName = tgtData.object:getName()
                         targetTable[tgtData.object.id_].range = math.floor ( 0.5 + getDistance3D ( Unit.getByName(unitName):getPoint(), tgtData.object:getPoint() ) )
                         targetTable[tgtData.object.id_][detecType] = true
+
+                        if targetTable[tgtData.object.id_].rangeKnown == false then --if the sensor knows the range change it, but prevent it from overriding known range with unknown range
+                            targetTable[tgtData.object.id_].rangeKnown = tgtData.distance
+                        end
                         
+                        if targetTable[tgtData.object.id_].typeKnown == false then --if the sensor knows the range change it, but prevent it from overriding known range with unknown range same as type
+                            targetTable[tgtData.object.id_].typeKnown = tgtData.type
+                        end
                     end
                     
                 end
@@ -72,8 +88,9 @@ local function checkDetectedTargets()
     
             for unitID, data in pairs (targetTable) do
                 
-                outString = unitName .. " detected " .. data.tgtName .. "; distance: " .. data.range .. "\n detected via: "
+                outString = unitName .. " detected " .. data.tgtName .. "; distance: " .. data.range .. "\n    range known: " .. tostring(data.rangeKnown) .. "; type known: " .. tostring(data.typeKnown) .. "\n    detectetion: "
                 
+
                 if data.visual == true then
                     outString = outString .. "VISUAL, "
                 end
@@ -98,12 +115,13 @@ local function checkDetectedTargets()
                     outString = outString .. "DATALINK"
                 end
     
-                simple.notify(outString , 1)
+                notify(outString , 1)
     
             end
         end              
     end
-    timer.scheduleFunction( checkDetectedTargets , {} , timer.getTime() + dt.updateRate )
+    return timer.getTime() + dt.updateRate
+    --timer.scheduleFunction( checkDetectedTargets , {} , timer.getTime() + dt.updateRate )
 end
 
 
