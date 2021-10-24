@@ -201,9 +201,14 @@ ctld.transportPilotNames = {
 
     "Huey-1",
     "Huey-2",
+    "Huey-3",
+    "Huey-4",
 
     "Hokum-1",
     "Hokum-2",
+
+    "SA-341-1",
+    "SA-341-2",
 }
 
 -- *************** Optional Extractable GROUPS *****************

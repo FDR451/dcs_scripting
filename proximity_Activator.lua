@@ -19,7 +19,26 @@ pa.actMax = 5 --maximum activations
 pa.actSpawnDelay = 120 --time between spawn events
 pa.notActivationDelay = 90 --time between checks if a group was in range but did not activate
 
-pa.blueplayerUnitName = ctld.transportPilotNames --unitnames
+pa.blueplayerUnitName = { --unit/pilot names
+    "Hip-1",
+    "Hip-2",
+
+    "Hind-1",
+    "Hind-2",
+    "Hind-3",
+    "Hind-4",
+
+    "Huey-1",
+    "Huey-2",
+    "Huey-3",
+    "Huey-4",
+
+    "Hokum-1",
+    "Hokum-2",
+
+    "SA-341-1",
+    "SA-341-2",
+}
 
 pa.redTargets = { --table of units that can be activated by proximity
     { groupName = "0_redInf-1",  },

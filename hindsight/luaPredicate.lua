@@ -45,3 +45,10 @@ pb.newBeacon("refugeeCampMorse.wav", mist.utils.zoneToVec3("hospitalWpZone-1"), 
 pb.newBeacon("beirut_farp.wav", mist.utils.zoneToVec3("BeirutFarpAdf"), "AM", true, 000330000, 100, "beirutFarpAdf")
 
 pb.newBeacon("checkpoint.wav", mist.utils.zoneToVec3("checkpointAdf"), "AM", true, 000451000, 100, "checkpointAdf")
+
+--crocodile
+pb.newBeacon("antakya.wav", mist.utils.zoneToVec3("antakya_adf"), "AM", true, 000235000, 100, "antakyaAdf")
+
+pb.newBeacon("355.wav", mist.utils.zoneToVec3("jisr-ash-shughur_adf"), "AM", true, 000355000, 100, "jisrAdf")
+
+pb.newBeacon("438.wav", mist.utils.zoneToVec3("taftanaz_adf"), "AM", true, 000438000, 100, "taftanazAdf")

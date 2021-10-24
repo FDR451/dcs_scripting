@@ -12,6 +12,8 @@ assert(loadfile("C:\\Users\\frueg\\Saved Games\\DCS.openbeta\\Missions\\dcs_scri
 assert(loadfile("C:\\Users\\frueg\\Saved Games\\DCS.openbeta\\Missions\\dcs_scripting\\rangeTrainer.lua"))()
 --detectorTest
 assert(loadfile("C:\\Users\\frueg\\Saved Games\\DCS.openbeta\\Missions\\dcs_scripting\\detectorTest.lua"))()
+--betterMarkers 
+assert(loadfile("C:\\Users\\frueg\\Saved Games\\DCS.openbeta\\Missions\\dcs_scripting\\betterMarkers.lua"))()
 
 --old:
 
