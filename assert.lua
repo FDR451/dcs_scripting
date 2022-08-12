@@ -14,6 +14,8 @@ assert(loadfile("C:\\Users\\frueg\\Saved Games\\DCS.openbeta\\Missions\\dcs_scri
 assert(loadfile("C:\\Users\\frueg\\Saved Games\\DCS.openbeta\\Missions\\dcs_scripting\\detectorTest.lua"))()
 --betterMarkers 
 assert(loadfile("C:\\Users\\frueg\\Saved Games\\DCS.openbeta\\Missions\\dcs_scripting\\betterMarkers.lua"))()
+--radio
+assert(loadfile("C:\\Users\\frueg\\Saved Games\\DCS.openbeta\\Missions\\dcs_scripting\\dcs_scripting\\radio.lua"))()
 
 --old:
 
